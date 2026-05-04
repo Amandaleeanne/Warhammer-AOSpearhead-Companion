@@ -2889,6 +2889,64 @@ abstract class _$WarhammerDatabase extends GeneratedDatabase {
     );
   }
 
+  Selectable<GetAbilityCardResult> getAbilityCard(
+    int abilityId,
+    int spearheadId,
+  ) {
+    return customSelect(
+      'SELECT ab.id, ab.name, ab.type AS ability_type, ab.timing, ab.description, sa.type AS source_type FROM abilities AS ab JOIN spearhead_abilities AS sa ON sa.ability_id = ab.id WHERE ab.id = ?1 AND sa.spearhead_id = ?2',
+      variables: [Variable<int>(abilityId), Variable<int>(spearheadId)],
+      readsFrom: {abilities, spearheadAbilities},
+    ).map(
+      (QueryRow row) => GetAbilityCardResult(
+        id: row.read<int>('id'),
+        name: row.read<String>('name'),
+        abilityType: row.read<String>('ability_type'),
+        timing: row.readNullable<String>('timing'),
+        description: row.read<String>('description'),
+        sourceType: row.read<String>('source_type'),
+      ),
+    );
+  }
+
+  Selectable<Ability> getRegimentAbility(String spearheadName) {
+    return customSelect(
+      'SELECT ab.* FROM spearhead_abilities AS sa JOIN abilities AS ab ON ab.id = sa.ability_id JOIN spearheads AS s ON s.id = sa.spearhead_id WHERE s.name = ?1 AND sa.type = \'regiment ability\'',
+      variables: [Variable<String>(spearheadName)],
+      readsFrom: {spearheadAbilities, abilities, spearheads},
+    ).asyncMap(abilities.mapFromRow);
+  }
+
+  Selectable<Ability> getBattleTrait(String spearheadName) {
+    return customSelect(
+      'SELECT ab.* FROM spearhead_abilities AS sa JOIN abilities AS ab ON ab.id = sa.ability_id JOIN spearheads AS s ON s.id = sa.spearhead_id WHERE s.name = ?1 AND sa.type = \'battle trait\'',
+      variables: [Variable<String>(spearheadName)],
+      readsFrom: {spearheadAbilities, abilities, spearheads},
+    ).asyncMap(abilities.mapFromRow);
+  }
+
+  Selectable<GetSpearheadReferenceResult> getSpearheadReference(
+    int spearheadId,
+  ) {
+    return customSelect(
+      'SELECT \'spearhead\' AS source, sa.type, ab.name, ab.description FROM spearhead_abilities AS sa JOIN abilities AS ab ON ab.id = sa.ability_id WHERE sa.spearhead_id = ?1 UNION ALL SELECT \'warscroll\' AS source, NULL AS type, ab.name, ab.description FROM warscrolls AS w JOIN warscroll_abilities AS wa ON wa.warscroll_id = w.id JOIN abilities AS ab ON ab.id = wa.ability_id WHERE w.spearhead_id = ?1',
+      variables: [Variable<int>(spearheadId)],
+      readsFrom: {
+        spearheadAbilities,
+        abilities,
+        warscrolls,
+        warscrollAbilities,
+      },
+    ).map(
+      (QueryRow row) => GetSpearheadReferenceResult(
+        source: row.read<String>('source'),
+        type: row.readNullable<String>('type'),
+        name: row.read<String>('name'),
+        description: row.read<String>('description'),
+      ),
+    );
+  }
+
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -6422,4 +6480,34 @@ class SearchSpearheadsResult {
   final Spearhead s;
   final String armyName;
   SearchSpearheadsResult({required this.s, required this.armyName});
+}
+
+class GetAbilityCardResult {
+  final int id;
+  final String name;
+  final String abilityType;
+  final String? timing;
+  final String description;
+  final String sourceType;
+  GetAbilityCardResult({
+    required this.id,
+    required this.name,
+    required this.abilityType,
+    this.timing,
+    required this.description,
+    required this.sourceType,
+  });
+}
+
+class GetSpearheadReferenceResult {
+  final String source;
+  final String? type;
+  final String name;
+  final String description;
+  GetSpearheadReferenceResult({
+    required this.source,
+    this.type,
+    required this.name,
+    required this.description,
+  });
 }

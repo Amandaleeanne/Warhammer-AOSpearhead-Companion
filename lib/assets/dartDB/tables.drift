@@ -88,8 +88,56 @@ CREATE TABLE IF NOT EXISTS spearhead_abilities(
 
 -- Start drift queries, these are defining methods within drift that contain SQL queries
 
+--used in search_factions
 searchSpearheads WITH SpearheadSearchResult:
     SELECT s.**, a.name AS army_name 
     FROM spearheads s
     INNER JOIN armies a ON a.id = s.army_id
     WHERE s.name LIKE :query OR a.name LIKE :query;
+
+--used to help build an ability card
+getAbilityCard AS AbilityData:
+	SELECT 
+	ab.id,
+	ab.name,
+	ab.type AS ability_type,
+	ab.timing,
+	ab.description,
+	sa.type AS source_type
+	FROM abilities ab
+	JOIN spearhead_abilities sa ON sa.ability_id = ab.id
+	WHERE ab.id = :abilityId
+	AND sa.spearhead_id = :spearheadId;
+
+getRegimentAbility AS RegimentAbilityResult:
+	SELECT ab.*
+	FROM spearhead_abilities sa
+	JOIN abilities ab ON ab.id = sa.ability_id
+	JOIN spearheads s ON s.id = sa.spearhead_id
+	WHERE s.name = :spearheadName
+	AND sa.type = 'regiment ability';
+
+
+getBattleTrait AS BattleTraitResult:
+	SELECT ab.*
+	FROM spearhead_abilities sa
+	JOIN abilities ab ON ab.id = sa.ability_id
+	JOIN spearheads s ON s.id = sa.spearhead_id
+	WHERE s.name = :spearheadName
+	AND sa.type = 'battle trait';
+
+getSpearheadReference AS ReferenceResult:
+	-- Spearhead abilities
+	SELECT 'spearhead' AS source, sa.type, ab.name, ab.description
+	FROM spearhead_abilities sa
+	JOIN abilities ab ON ab.id = sa.ability_id
+	WHERE sa.spearhead_id = :spearheadId
+
+	UNION ALL
+
+	-- Warscroll abilities
+	SELECT 'warscroll' AS source, NULL AS type, ab.name, ab.description
+	FROM warscrolls w
+	JOIN warscroll_abilities wa ON wa.warscroll_id = w.id
+	JOIN abilities ab ON ab.id = wa.ability_id
+	WHERE w.spearhead_id = :spearheadId;

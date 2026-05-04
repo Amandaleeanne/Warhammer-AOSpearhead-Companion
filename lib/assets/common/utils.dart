@@ -11,12 +11,14 @@ class CommonUtils {
             );
 }
 
-  Container abilityViewer(){
-    return Container(); //TODO: fill out container!
+  Card abilityViewer(WarhammerDatabase db){
+    return Card(
+
+    ); //TODO: fill out container!
   }
 }
 
-///This class takes all of the configurations and allows for an easy callback to the data.
+///This class takes all of the configurations and allows for an easy callback to the data to a sql method.
 class ConfiguartionBuilder{
   final String spearheadName;
   final String enhancementName;
