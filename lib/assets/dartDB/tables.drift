@@ -1,0 +1,95 @@
+-- 1. GRAND ALLIANCES(exluded)
+-- 2. ARMIES
+CREATE TABLE IF NOT EXISTS armies(
+	id INTEGER PRIMARY KEY,
+	name TEXT NOT NULL UNIQUE,
+	image_path TEXT -- asset path, e.g. 'assets/icons/[army]/[army].svg'
+);
+
+-- 3. SPEARHEADS(one per army box)
+CREATE TABLE IF NOT EXISTS spearheads(
+	id INTEGER PRIMARY KEY,
+	army_id INTEGER NOT NULL REFERENCES armies(id),
+	name TEXT NOT NULL UNIQUE -- e.g. 'Stormcast Eternals Spearhead'
+);
+
+-- 4. KEYWORDS
+CREATE TABLE IF NOT EXISTS keywords(
+	id INTEGER PRIMARY KEY,
+	name TEXT NOT NULL UNIQUE -- 'Hero', 'Wizard', 'Fly', 'Cavalry' …
+);
+
+-- 5. WARSCROLLS
+CREATE TABLE IF NOT EXISTS warscrolls(
+	id INTEGER PRIMARY KEY,
+	spearhead_id INTEGER NOT NULL REFERENCES spearheads(id),
+	name TEXT NOT NULL,
+	image_path TEXT, -- asset path, e.g. 'assets/icons/[army]/[warscroll].svg'
+	-- Core stats
+	move INTEGER NOT NULL, -- inches
+	health INTEGER NOT NULL, -- wounds per model
+	save INTEGER NOT NULL, -- e.g. 4 means 4+
+	ward INTEGER, -- NULL = no ward save
+	control INTEGER NOT NULL DEFAULT 1,
+	is_general BOOLEAN NOT NULL,
+	UNIQUE(spearhead_id, name)
+);
+
+-- 6. WARSCROLL KEYWORDS(junction)
+CREATE TABLE IF NOT EXISTS warscroll_keywords(
+	warscroll_id INTEGER NOT NULL REFERENCES warscrolls(id),
+	keyword_id INTEGER NOT NULL REFERENCES keywords(id),
+	PRIMARY KEY(warscroll_id, keyword_id)
+) WITHOUT ROWID;
+
+-- 7. WEAPONS
+CREATE TABLE IF NOT EXISTS weapons(
+	warscroll_id INTEGER NOT NULL REFERENCES warscrolls(id),
+	name TEXT NOT NULL,
+	-- Stats
+	range INTEGER NOT NULL, -- 0 for melee, 1+ for ranged
+	attacks TEXT NOT NULL, -- can be dice e.g. '2D6' or fixed '3'
+	hit INTEGER NOT NULL, -- e.g. 3 means 3+
+	wound INTEGER NOT NULL, -- e.g. 4 means 4+
+	rend INTEGER NOT NULL DEFAULT 0,
+	damage TEXT NOT NULL, -- '1', '2', 'D3', 'D6' …
+	special_rule TEXT, -- weapon abilities
+	PRIMARY KEY(warscroll_id, name)
+) WITHOUT ROWID;
+
+-- 8. ABILITIES
+CREATE TABLE IF NOT EXISTS abilities(
+	id INTEGER PRIMARY KEY,
+	name TEXT NOT NULL,
+	type TEXT NOT NULL CHECK(
+		type IN (
+			'passive','once per turn','once per battle',
+			'reaction','once per round'
+			)),
+	timing TEXT, -- 'Start of Turn', 'Combat Phase', etc.
+	description TEXT NOT NULL
+);
+
+-- 9. WARSCROLL ABILITIES(junction — warscrolls can share abilities)
+CREATE TABLE IF NOT EXISTS warscroll_abilities(
+	warscroll_id INTEGER NOT NULL REFERENCES warscrolls(id),
+	ability_id INTEGER NOT NULL REFERENCES abilities(id),
+	PRIMARY KEY(warscroll_id, ability_id)
+) WITHOUT ROWID;
+
+-- 10. SPEARHEAD ABILITIES(army-wide Spearhead rules)
+CREATE TABLE IF NOT EXISTS spearhead_abilities(
+	spearhead_id INTEGER NOT NULL REFERENCES spearheads(id),
+	ability_id INTEGER NOT NULL REFERENCES abilities(id),
+	type TEXT NOT NULL CHECK(type IN (
+	'battle trait', 'regiment ability', 'enhancement')),
+	PRIMARY KEY(spearhead_id, ability_id)
+) WITHOUT ROWID;
+
+-- Start drift queries, these are defining methods within drift that contain SQL queries
+
+searchSpearheads WITH SpearheadSearchResult:
+    SELECT s.**, a.name AS army_name 
+    FROM spearheads s
+    INNER JOIN armies a ON a.id = s.army_id
+    WHERE s.name LIKE :query OR a.name LIKE :query;
