@@ -13,14 +13,14 @@ The UI and Functionality are not finished one bit, and I am still learning flutt
 I plan on a complete polish after my class is over on June 16th, but the goal is to have main functionality complete by then. 
 
 # Checklist:
-- [] Complete inital MVP UI flow and features
-- [] Have the databse contain all Spearhead data
-- [] Create and load all custom image assets
-- [] Delete placeholder assets
-- [] Do final polish on UI and unify theme
-- [] Refactor code to be more readable
-- [] Complete "nice to have" features
-- [] Polish those features
+- [ ] Complete inital MVP UI flow and features
+- [ ] Have the databse contain all Spearhead data
+- [ ] Create and load all custom image assets
+- [ ] Delete placeholder assets
+- [ ] Do final polish on UI and unify theme
+- [ ] Refactor code to be more readable
+- [ ] Complete "nice to have" features
+- [ ] Polish those features
 
 
 # Check out the dev blog!
