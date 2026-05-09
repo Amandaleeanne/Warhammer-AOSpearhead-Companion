@@ -1,22 +1,30 @@
-import 'package:flutter/material.dart';
-import 'package:warhammer/assets/dartDB/spearhead_database.dart';
+import 'package:warhammer/global_imports.dart';
 import 'package:warhammer/pages/landing_page.dart';
-// import 'package:sqflite/sqflite.dart';
-// import 'package:sqflite/';
-// import 'package:flutter/foundation.dart';
 
-void main() async{
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final spearheads = WarhammerDatabase();
-  runApp(MainApp(db: spearheads));
+  final isVsMode = false;
+  runApp(
+    MultiProvider(
+      providers: [
+        Provider<WarhammerDatabase>.value(value: spearheads),
+      ],
+      child: const MainApp(),
+    )
+  );
 }
 
 class MainApp extends StatelessWidget {
-  final WarhammerDatabase db;
-  const MainApp({super.key, required this.db});
+  const MainApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(debugShowCheckedModeBanner: false, home: LandingPage(db : db));
+    return const MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: LandingPage(),
+    );
   }
 }
+

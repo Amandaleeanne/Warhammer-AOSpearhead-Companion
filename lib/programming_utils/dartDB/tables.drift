@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS weapons(
 	warscroll_id INTEGER NOT NULL REFERENCES warscrolls(id),
 	name TEXT NOT NULL,
 	-- Stats
-	range INTEGER NOT NULL, -- 0 for melee, 1+ for ranged
+	"range" INTEGER NOT NULL, -- 0 for melee, 1+ for ranged
 	attacks TEXT NOT NULL, -- can be dice e.g. '2D6' or fixed '3'
 	hit INTEGER NOT NULL, -- e.g. 3 means 3+
 	wound INTEGER NOT NULL, -- e.g. 4 means 4+
@@ -89,14 +89,14 @@ CREATE TABLE IF NOT EXISTS spearhead_abilities(
 -- Start drift queries, these are defining methods within drift that contain SQL queries
 
 --used in search_factions
-searchSpearheads WITH SpearheadSearchResult:
+searchSpearheads:
     SELECT s.**, a.name AS army_name 
     FROM spearheads s
     INNER JOIN armies a ON a.id = s.army_id
     WHERE s.name LIKE :query OR a.name LIKE :query;
 
 --used to help build an ability card
-getAbilityCard AS AbilityData:
+abilityCard AS AbilityData:
 	SELECT 
 	ab.id,
 	ab.name,
@@ -109,7 +109,7 @@ getAbilityCard AS AbilityData:
 	WHERE ab.id = :abilityId
 	AND sa.spearhead_id = :spearheadId;
 
-getRegimentAbility AS RegimentAbilityResult:
+getRegimentAbility:
 	SELECT ab.*
 	FROM spearhead_abilities sa
 	JOIN abilities ab ON ab.id = sa.ability_id
@@ -118,7 +118,7 @@ getRegimentAbility AS RegimentAbilityResult:
 	AND sa.type = 'regiment ability';
 
 
-getBattleTrait AS BattleTraitResult:
+getBattleTrait:
 	SELECT ab.*
 	FROM spearhead_abilities sa
 	JOIN abilities ab ON ab.id = sa.ability_id

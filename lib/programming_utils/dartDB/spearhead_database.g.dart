@@ -1528,6 +1528,15 @@ class Weapons extends Table with TableInfo<Weapons, Weapon> {
     requiredDuringInsert: true,
     $customConstraints: 'NOT NULL',
   );
+  static const VerificationMeta _rangeMeta = const VerificationMeta('range');
+  late final GeneratedColumn<int> range = GeneratedColumn<int>(
+    'range',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL',
+  );
   static const VerificationMeta _attacksMeta = const VerificationMeta(
     'attacks',
   );
@@ -1591,6 +1600,7 @@ class Weapons extends Table with TableInfo<Weapons, Weapon> {
   List<GeneratedColumn> get $columns => [
     warscrollId,
     name,
+    range,
     attacks,
     hit,
     wound,
@@ -1628,6 +1638,14 @@ class Weapons extends Table with TableInfo<Weapons, Weapon> {
       );
     } else if (isInserting) {
       context.missing(_nameMeta);
+    }
+    if (data.containsKey('range')) {
+      context.handle(
+        _rangeMeta,
+        range.isAcceptableOrUnknown(data['range']!, _rangeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_rangeMeta);
     }
     if (data.containsKey('attacks')) {
       context.handle(
@@ -1693,6 +1711,10 @@ class Weapons extends Table with TableInfo<Weapons, Weapon> {
         DriftSqlType.string,
         data['${effectivePrefix}name'],
       )!,
+      range: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}range'],
+      )!,
       attacks: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}attacks'],
@@ -1739,6 +1761,9 @@ class Weapon extends DataClass implements Insertable<Weapon> {
   final int warscrollId;
   final String name;
 
+  /// Stats
+  final int range;
+
   /// 0 for melee, 1+ for ranged
   final String attacks;
 
@@ -1757,6 +1782,7 @@ class Weapon extends DataClass implements Insertable<Weapon> {
   const Weapon({
     required this.warscrollId,
     required this.name,
+    required this.range,
     required this.attacks,
     required this.hit,
     required this.wound,
@@ -1769,6 +1795,7 @@ class Weapon extends DataClass implements Insertable<Weapon> {
     final map = <String, Expression>{};
     map['warscroll_id'] = Variable<int>(warscrollId);
     map['name'] = Variable<String>(name);
+    map['range'] = Variable<int>(range);
     map['attacks'] = Variable<String>(attacks);
     map['hit'] = Variable<int>(hit);
     map['wound'] = Variable<int>(wound);
@@ -1784,6 +1811,7 @@ class Weapon extends DataClass implements Insertable<Weapon> {
     return WeaponsCompanion(
       warscrollId: Value(warscrollId),
       name: Value(name),
+      range: Value(range),
       attacks: Value(attacks),
       hit: Value(hit),
       wound: Value(wound),
@@ -1803,6 +1831,7 @@ class Weapon extends DataClass implements Insertable<Weapon> {
     return Weapon(
       warscrollId: serializer.fromJson<int>(json['warscroll_id']),
       name: serializer.fromJson<String>(json['name']),
+      range: serializer.fromJson<int>(json['range']),
       attacks: serializer.fromJson<String>(json['attacks']),
       hit: serializer.fromJson<int>(json['hit']),
       wound: serializer.fromJson<int>(json['wound']),
@@ -1817,6 +1846,7 @@ class Weapon extends DataClass implements Insertable<Weapon> {
     return <String, dynamic>{
       'warscroll_id': serializer.toJson<int>(warscrollId),
       'name': serializer.toJson<String>(name),
+      'range': serializer.toJson<int>(range),
       'attacks': serializer.toJson<String>(attacks),
       'hit': serializer.toJson<int>(hit),
       'wound': serializer.toJson<int>(wound),
@@ -1829,6 +1859,7 @@ class Weapon extends DataClass implements Insertable<Weapon> {
   Weapon copyWith({
     int? warscrollId,
     String? name,
+    int? range,
     String? attacks,
     int? hit,
     int? wound,
@@ -1838,6 +1869,7 @@ class Weapon extends DataClass implements Insertable<Weapon> {
   }) => Weapon(
     warscrollId: warscrollId ?? this.warscrollId,
     name: name ?? this.name,
+    range: range ?? this.range,
     attacks: attacks ?? this.attacks,
     hit: hit ?? this.hit,
     wound: wound ?? this.wound,
@@ -1851,6 +1883,7 @@ class Weapon extends DataClass implements Insertable<Weapon> {
           ? data.warscrollId.value
           : this.warscrollId,
       name: data.name.present ? data.name.value : this.name,
+      range: data.range.present ? data.range.value : this.range,
       attacks: data.attacks.present ? data.attacks.value : this.attacks,
       hit: data.hit.present ? data.hit.value : this.hit,
       wound: data.wound.present ? data.wound.value : this.wound,
@@ -1867,6 +1900,7 @@ class Weapon extends DataClass implements Insertable<Weapon> {
     return (StringBuffer('Weapon(')
           ..write('warscrollId: $warscrollId, ')
           ..write('name: $name, ')
+          ..write('range: $range, ')
           ..write('attacks: $attacks, ')
           ..write('hit: $hit, ')
           ..write('wound: $wound, ')
@@ -1881,6 +1915,7 @@ class Weapon extends DataClass implements Insertable<Weapon> {
   int get hashCode => Object.hash(
     warscrollId,
     name,
+    range,
     attacks,
     hit,
     wound,
@@ -1894,6 +1929,7 @@ class Weapon extends DataClass implements Insertable<Weapon> {
       (other is Weapon &&
           other.warscrollId == this.warscrollId &&
           other.name == this.name &&
+          other.range == this.range &&
           other.attacks == this.attacks &&
           other.hit == this.hit &&
           other.wound == this.wound &&
@@ -1905,6 +1941,7 @@ class Weapon extends DataClass implements Insertable<Weapon> {
 class WeaponsCompanion extends UpdateCompanion<Weapon> {
   final Value<int> warscrollId;
   final Value<String> name;
+  final Value<int> range;
   final Value<String> attacks;
   final Value<int> hit;
   final Value<int> wound;
@@ -1914,6 +1951,7 @@ class WeaponsCompanion extends UpdateCompanion<Weapon> {
   const WeaponsCompanion({
     this.warscrollId = const Value.absent(),
     this.name = const Value.absent(),
+    this.range = const Value.absent(),
     this.attacks = const Value.absent(),
     this.hit = const Value.absent(),
     this.wound = const Value.absent(),
@@ -1924,6 +1962,7 @@ class WeaponsCompanion extends UpdateCompanion<Weapon> {
   WeaponsCompanion.insert({
     required int warscrollId,
     required String name,
+    required int range,
     required String attacks,
     required int hit,
     required int wound,
@@ -1932,6 +1971,7 @@ class WeaponsCompanion extends UpdateCompanion<Weapon> {
     this.specialRule = const Value.absent(),
   }) : warscrollId = Value(warscrollId),
        name = Value(name),
+       range = Value(range),
        attacks = Value(attacks),
        hit = Value(hit),
        wound = Value(wound),
@@ -1939,6 +1979,7 @@ class WeaponsCompanion extends UpdateCompanion<Weapon> {
   static Insertable<Weapon> custom({
     Expression<int>? warscrollId,
     Expression<String>? name,
+    Expression<int>? range,
     Expression<String>? attacks,
     Expression<int>? hit,
     Expression<int>? wound,
@@ -1949,6 +1990,7 @@ class WeaponsCompanion extends UpdateCompanion<Weapon> {
     return RawValuesInsertable({
       if (warscrollId != null) 'warscroll_id': warscrollId,
       if (name != null) 'name': name,
+      if (range != null) 'range': range,
       if (attacks != null) 'attacks': attacks,
       if (hit != null) 'hit': hit,
       if (wound != null) 'wound': wound,
@@ -1961,6 +2003,7 @@ class WeaponsCompanion extends UpdateCompanion<Weapon> {
   WeaponsCompanion copyWith({
     Value<int>? warscrollId,
     Value<String>? name,
+    Value<int>? range,
     Value<String>? attacks,
     Value<int>? hit,
     Value<int>? wound,
@@ -1971,6 +2014,7 @@ class WeaponsCompanion extends UpdateCompanion<Weapon> {
     return WeaponsCompanion(
       warscrollId: warscrollId ?? this.warscrollId,
       name: name ?? this.name,
+      range: range ?? this.range,
       attacks: attacks ?? this.attacks,
       hit: hit ?? this.hit,
       wound: wound ?? this.wound,
@@ -1988,6 +2032,9 @@ class WeaponsCompanion extends UpdateCompanion<Weapon> {
     }
     if (name.present) {
       map['name'] = Variable<String>(name.value);
+    }
+    if (range.present) {
+      map['range'] = Variable<int>(range.value);
     }
     if (attacks.present) {
       map['attacks'] = Variable<String>(attacks.value);
@@ -2015,6 +2062,7 @@ class WeaponsCompanion extends UpdateCompanion<Weapon> {
     return (StringBuffer('WeaponsCompanion(')
           ..write('warscrollId: $warscrollId, ')
           ..write('name: $name, ')
+          ..write('range: $range, ')
           ..write('attacks: $attacks, ')
           ..write('hit: $hit, ')
           ..write('wound: $wound, ')
@@ -2889,16 +2937,13 @@ abstract class _$WarhammerDatabase extends GeneratedDatabase {
     );
   }
 
-  Selectable<GetAbilityCardResult> getAbilityCard(
-    int abilityId,
-    int spearheadId,
-  ) {
+  Selectable<AbilityData> abilityCard(int abilityId, int spearheadId) {
     return customSelect(
       'SELECT ab.id, ab.name, ab.type AS ability_type, ab.timing, ab.description, sa.type AS source_type FROM abilities AS ab JOIN spearhead_abilities AS sa ON sa.ability_id = ab.id WHERE ab.id = ?1 AND sa.spearhead_id = ?2',
       variables: [Variable<int>(abilityId), Variable<int>(spearheadId)],
       readsFrom: {abilities, spearheadAbilities},
     ).map(
-      (QueryRow row) => GetAbilityCardResult(
+      (QueryRow row) => AbilityData(
         id: row.read<int>('id'),
         name: row.read<String>('name'),
         abilityType: row.read<String>('ability_type'),
@@ -2925,9 +2970,7 @@ abstract class _$WarhammerDatabase extends GeneratedDatabase {
     ).asyncMap(abilities.mapFromRow);
   }
 
-  Selectable<GetSpearheadReferenceResult> getSpearheadReference(
-    int spearheadId,
-  ) {
+  Selectable<ReferenceResult> getSpearheadReference(int spearheadId) {
     return customSelect(
       'SELECT \'spearhead\' AS source, sa.type, ab.name, ab.description FROM spearhead_abilities AS sa JOIN abilities AS ab ON ab.id = sa.ability_id WHERE sa.spearhead_id = ?1 UNION ALL SELECT \'warscroll\' AS source, NULL AS type, ab.name, ab.description FROM warscrolls AS w JOIN warscroll_abilities AS wa ON wa.warscroll_id = w.id JOIN abilities AS ab ON ab.id = wa.ability_id WHERE w.spearhead_id = ?1',
       variables: [Variable<int>(spearheadId)],
@@ -2938,7 +2981,7 @@ abstract class _$WarhammerDatabase extends GeneratedDatabase {
         warscrollAbilities,
       },
     ).map(
-      (QueryRow row) => GetSpearheadReferenceResult(
+      (QueryRow row) => ReferenceResult(
         source: row.read<String>('source'),
         type: row.readNullable<String>('type'),
         name: row.read<String>('name'),
@@ -4958,6 +5001,7 @@ typedef $WeaponsCreateCompanionBuilder =
     WeaponsCompanion Function({
       required int warscrollId,
       required String name,
+      required int range,
       required String attacks,
       required int hit,
       required int wound,
@@ -4969,6 +5013,7 @@ typedef $WeaponsUpdateCompanionBuilder =
     WeaponsCompanion Function({
       Value<int> warscrollId,
       Value<String> name,
+      Value<int> range,
       Value<String> attacks,
       Value<int> hit,
       Value<int> wound,
@@ -5011,6 +5056,11 @@ class $WeaponsFilterComposer extends Composer<_$WarhammerDatabase, Weapons> {
   });
   ColumnFilters<String> get name => $composableBuilder(
     column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get range => $composableBuilder(
+    column: $table.range,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5081,6 +5131,11 @@ class $WeaponsOrderingComposer extends Composer<_$WarhammerDatabase, Weapons> {
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get range => $composableBuilder(
+    column: $table.range,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get attacks => $composableBuilder(
     column: $table.attacks,
     builder: (column) => ColumnOrderings(column),
@@ -5146,6 +5201,9 @@ class $WeaponsAnnotationComposer
   });
   GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<int> get range =>
+      $composableBuilder(column: $table.range, builder: (column) => column);
 
   GeneratedColumn<String> get attacks =>
       $composableBuilder(column: $table.attacks, builder: (column) => column);
@@ -5221,6 +5279,7 @@ class $WeaponsTableManager
               ({
                 Value<int> warscrollId = const Value.absent(),
                 Value<String> name = const Value.absent(),
+                Value<int> range = const Value.absent(),
                 Value<String> attacks = const Value.absent(),
                 Value<int> hit = const Value.absent(),
                 Value<int> wound = const Value.absent(),
@@ -5230,6 +5289,7 @@ class $WeaponsTableManager
               }) => WeaponsCompanion(
                 warscrollId: warscrollId,
                 name: name,
+                range: range,
                 attacks: attacks,
                 hit: hit,
                 wound: wound,
@@ -5241,6 +5301,7 @@ class $WeaponsTableManager
               ({
                 required int warscrollId,
                 required String name,
+                required int range,
                 required String attacks,
                 required int hit,
                 required int wound,
@@ -5250,6 +5311,7 @@ class $WeaponsTableManager
               }) => WeaponsCompanion.insert(
                 warscrollId: warscrollId,
                 name: name,
+                range: range,
                 attacks: attacks,
                 hit: hit,
                 wound: wound,
@@ -6482,14 +6544,14 @@ class SearchSpearheadsResult {
   SearchSpearheadsResult({required this.s, required this.armyName});
 }
 
-class GetAbilityCardResult {
+class AbilityData {
   final int id;
   final String name;
   final String abilityType;
   final String? timing;
   final String description;
   final String sourceType;
-  GetAbilityCardResult({
+  AbilityData({
     required this.id,
     required this.name,
     required this.abilityType,
@@ -6499,12 +6561,12 @@ class GetAbilityCardResult {
   });
 }
 
-class GetSpearheadReferenceResult {
+class ReferenceResult {
   final String source;
   final String? type;
   final String name;
   final String description;
-  GetSpearheadReferenceResult({
+  ReferenceResult({
     required this.source,
     this.type,
     required this.name,
