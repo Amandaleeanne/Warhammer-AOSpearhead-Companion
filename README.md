@@ -1,5 +1,7 @@
 # Warhammer AOS Spearhead Companion
 
+# [Check out the dev blog!](https://amandaleeanne.github.io/Devlog-for-WarhammerCapstoneProject/)
+
 # Summary:
 This is a Flutter + SQLite application developed as a capstone project for my SDE Bachelors class.
 At its core, it provides an better, in my opinion, UI flow than the current offical warhammer AOS applciation;
@@ -23,5 +25,3 @@ I plan on a complete polish after my class is over on June 16th, but the goal is
 - [ ] Polish those features
 
 
-# Check out the dev blog!
-*Link coming soon* 
