@@ -70,7 +70,7 @@ class _ArmyViewerState extends State<ArmyViewer> {
           child: SafeArea(
             bottom: false,
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(8),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
