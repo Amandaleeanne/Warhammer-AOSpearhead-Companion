@@ -1,5 +1,6 @@
 import 'package:warhammer/global_imports.dart';
 import 'package:warhammer/programming_utils/common/phase_view.dart';
+import 'package:warhammer/programming_utils/common/unit_view.dart';
 
 enum ViewType {unit, phase} //represents the different views
 enum PhaseType{hero, move, ranged, charge, fight, endOfTurn}
@@ -27,14 +28,12 @@ class _ArmyViewerState extends State<ArmyViewer> {
       body: Column( //Change to Listview for an automatic safe area
         children: [      
           customAppBar(context),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           //ViewSwitching
             _buildViewToggle(),    
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             _buildPersistentCarousel(),
-            
-            const SizedBox(height: 16),
-
+        
             // --- BLUE CIRCLE: The Dynamic Content Area ---
             // Expanded ensures it fills the rest of the screen and updates dynamically.
             Expanded(
@@ -139,106 +138,97 @@ class _ArmyViewerState extends State<ArmyViewer> {
         ],
       );
 
-//-------- Stateful view switching:
-
-// Toggle widget + Handler:
-  Widget _buildViewToggle() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _toggleButton(
-            title: 'Unit View',
-            icon: Icons.check,
-            isSelected: _currentView == ViewType.unit,
-            onTap: () => setState(() => _currentView = ViewType.unit),
-          ),
-          _toggleButton(
-            title: 'Phase View',
-            icon: Icons.check,
-            isSelected: _currentView == ViewType.phase,
-            onTap: () => setState(() => _currentView = ViewType.phase),
-          ),
-        ],
-      ),
-    );
-  }
-  // Helper widget for individual toggle chips
-  Widget _toggleButton({
-    required String title,
-    required IconData icon,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+// ------------------ Unit View / Phase view chip builder ---------------------
+    // Toggle widget + Handler:
+    Widget _buildViewToggle() {
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF5A5568) : Colors.transparent, // Dark slate color from your image
-          borderRadius: BorderRadius.circular(20),
+          color: Colors.grey[200],
+          borderRadius: BorderRadius.circular(24),
         ),
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            if (isSelected) ...[
-              Icon(icon, color: Colors.white, size: 16),
-              const SizedBox(width: 6),
-            ],
-            Text(
-              title,
-              style: TextStyle(
-                color: isSelected ? Colors.white : Colors.grey[600],
-                fontWeight: FontWeight.w600,
-              ),
+            _toggleButton(
+              title: 'Unit View',
+              icon: Icons.check,
+              isSelected: _currentView == ViewType.unit,
+              onTap: () => setState(() => _currentView = ViewType.unit),
+            ),
+            _toggleButton(
+              title: 'Phase View',
+              icon: Icons.check,
+              isSelected: _currentView == ViewType.phase,
+              onTap: () => setState(() => _currentView = ViewType.phase),
             ),
           ],
         ),
-      ),
+      );
+    }
+    // The individual toggle chip styling
+    Widget _toggleButton({required String title,required IconData icon, required bool isSelected, required VoidCallback onTap}) 
+    =>Expanded(
+      child: GestureDetector(
+          onTap: onTap,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            decoration: BoxDecoration(
+              color: isSelected ? const Color(0xFF5A5568) : Colors.transparent, // Dark slate color from your image
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (isSelected) ...[
+                  Icon(icon, color: Colors.white, size: 16),
+                  const SizedBox(width: 6),
+                ],
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : Colors.grey[600],
+                    fontWeight: FontWeight.w600,
+                    
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
     );
-  }
+    
 
 /// ----------------------- Carosuel -------------------
-/// TODO: replace placeholder with actual carosel
-  Widget _buildPersistentCarousel() {
-    return Container(
-      height: 140,
-      width: double.infinity,
-      color: Colors.grey[100], 
-      child: const Center(
-        child: Text(
-          "Persistent Carousel Placeholder",
-          style: TextStyle(color: Colors.grey),
-        ),
-      ),
-    );
-  }
-/// ------------------Unit View -------------------
-  /// ---------------- Unit List ------------------------
-    Widget _buildUnitViewContent() {
+  /// TODO: replace placeholder with actual carosel
+    Widget _buildPersistentCarousel() {
       return Container(
-        key: const ValueKey('UnitView'), // Key required for AnimatedSwitcher transitions
-        color: Colors.white,
+        height: 140,
+        width: double.infinity,
+        color: Colors.grey[100], 
         child: const Center(
-          child: Text("Unit View Content (List of Cards)"),
+          child: Text(
+            "Persistent Carousel Placeholder",
+            style: TextStyle(color: Colors.grey),
+          ),
         ),
       );
     }
+/// ------------------Unit View -------------------
+  /// ---------------- Unit List ------------------------
+    Widget _buildUnitViewContent() 
+    => const UnitViewContent(
+    key: ValueKey('UnitView'), // Keeps the main AnimatedSwitcher happy
+  );
 
 /// --------------------- Phase View -----------------------
 /// 
-  Widget _buildPhaseViewContent() {
-  return const PhaseViewContent(
+  Widget _buildPhaseViewContent() 
+  => const PhaseViewContent(
     key: ValueKey('PhaseView'), // Keeps the main AnimatedSwitcher happy
   );
-}
-
-//----------- PLaceholders:
-
 
 }

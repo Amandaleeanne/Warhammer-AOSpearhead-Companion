@@ -18,7 +18,7 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
       children: [
         // --- SECONDARY TOGGLE: Unified Container (Same look & feel) ---
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+          padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 8.0),
           child: Container(
             padding: const EdgeInsets.all(4), // Inner padding around the selection pills
             decoration: BoxDecoration(
@@ -76,7 +76,7 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
               style: TextStyle(
                 color: isSelected ? Colors.white : Colors.grey[600],
                 fontWeight: FontWeight.w600,
-                fontSize: 13, // Slightly smaller to comfortably fit 5 items across the screen
+                fontSize: 13, // Slightly smaller to comfortably fit 6 items across the screen
               ),
             ),
           ),
