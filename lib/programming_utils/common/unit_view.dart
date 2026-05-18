@@ -10,11 +10,10 @@ class UnitViewContent extends StatefulWidget {
 class _UnitViewContentState extends State<UnitViewContent> {
   @override
   Widget build(BuildContext context) {
-    // This represents the left panel layout (blue circle)
     return ListView.separated(
       padding: const EdgeInsets.all(16),
       itemCount: 8, // Number of units to display
-      separatorBuilder: (context, index) => const SizedBox(height: 16),
+      separatorBuilder: (context, index) => const SizedBox(height: 6),
       itemBuilder: (context, index) { //Builds each info card
         return Row(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -74,10 +73,10 @@ class _UnitViewContentState extends State<UnitViewContent> {
         height: height,
         decoration: BoxDecoration(
           color: Colors.grey[200], // Fallback background color while loading
-          borderRadius: BorderRadius.circular(12), // Slightly larger radius looks great at 70x70
+          borderRadius: BorderRadius.circular(12), 
           image: DecorationImage(
-            image: AssetImage(path), // Swap with your image path
-            fit: BoxFit.cover, // Ensures it blows up to fill the whole 70x70 space completely
+            image: AssetImage(path), 
+            fit: BoxFit.cover, 
           ),
         ),
       );

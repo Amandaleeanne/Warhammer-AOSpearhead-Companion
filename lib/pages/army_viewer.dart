@@ -38,7 +38,7 @@ class _ArmyViewerState extends State<ArmyViewer> {
             // Expanded ensures it fills the rest of the screen and updates dynamically.
             Expanded(
               child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 250),
+                duration: const Duration(milliseconds: 100),
                 child: _currentView == ViewType.unit
                     ? _buildUnitViewContent()
                     : _buildPhaseViewContent(),
