@@ -1,9 +1,11 @@
 import 'package:warhammer/global_imports.dart';
-
+import 'package:warhammer/programming_utils/dartDB/compiledSpearhead.dart';
 enum PhaseSubView { hero, move, ranged, charge, fight, endOfTurn }
 
+///Class contains everything needed to populate the PhaseView of the Main Game Page (army_viewer.dart)
 class PhaseViewContent extends StatefulWidget {
-  const PhaseViewContent({super.key});
+  final ActiveSpearhead db;
+  const PhaseViewContent({required this.db, super.key});
 
   @override
   State<PhaseViewContent> createState() => _PhaseViewContentState();
@@ -16,13 +18,12 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // --- SECONDARY TOGGLE: Unified Container (Same look & feel) ---
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 8.0),
           child: Container(
-            padding: const EdgeInsets.all(4), // Inner padding around the selection pills
+            padding: const EdgeInsets.all(4), // inner padding around the selection pills
             decoration: BoxDecoration(
-              color: Colors.grey[200], // Unified background container
+              color: Colors.grey[200], // unified background container
               borderRadius: BorderRadius.circular(28),
             ),
             child: Row(
@@ -38,7 +39,7 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
           ),
         ),
 
-        // --- SUB-VIEW CONTENT AREA ---
+        // --- CONTENT AREA ---
         Expanded(
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 200),
@@ -49,7 +50,7 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
     );
   }
 
-  // Helper widget to build a unified segment item
+  // builds an individual segmented item tab
   Widget _segmentedTab(String label, PhaseSubView viewType) {
     final bool isSelected = _currentSubView == viewType;
 
@@ -101,4 +102,7 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
         return const Center(key: ValueKey('fight'), child: Text('End Of turn shennanigans'));
     }
   }
+
+  // Widget _populateCards()
+  // => Return a clickable card correctly gets all cards associated wtih a certain phase. 
 }

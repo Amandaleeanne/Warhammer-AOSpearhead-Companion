@@ -109,6 +109,7 @@ abilityCard AS AbilityData:
 	WHERE ab.id = :abilityId
 	AND sa.spearhead_id = :spearheadId;
 
+-- for picking regiment abilities (regimentability page)
 getRegimentAbility:
 	SELECT ab.*
 	FROM spearhead_abilities sa
@@ -117,7 +118,7 @@ getRegimentAbility:
 	WHERE s.name = :spearheadName
 	AND sa.type = 'regiment ability';
 
-
+-- for picking enhancements (pick enhancement page)
 getBattleTrait:
 	SELECT ab.*
 	FROM spearhead_abilities sa
@@ -126,18 +127,125 @@ getBattleTrait:
 	WHERE s.name = :spearheadName
 	AND sa.type = 'battle trait';
 
-getSpearheadReference AS ReferenceResult:
-	-- Spearhead abilities
-	SELECT 'spearhead' AS source, sa.type, ab.name, ab.description
-	FROM spearhead_abilities sa
-	JOIN abilities ab ON ab.id = sa.ability_id
-	WHERE sa.spearhead_id = :spearheadId
+--  Queries for making the selected spearhead cache "table" (Flattens the database)
 
-	UNION ALL
+-- gets all units and associated data with them
+getCompiledUnits AS CompiledUnit:
+SELECT
+    s.name AS spearhead_name,
 
-	-- Warscroll abilities
-	SELECT 'warscroll' AS source, NULL AS type, ab.name, ab.description
-	FROM warscrolls w
-	JOIN warscroll_abilities wa ON wa.warscroll_id = w.id
-	JOIN abilities ab ON ab.id = wa.ability_id
-	WHERE w.spearhead_id = :spearheadId;
+    w.id AS warscroll_id,
+    w.name AS warscroll_name,
+    w.image_path,
+
+    w.move,
+    w.health,
+    w.save,
+    w.ward,
+    w.control,
+    w.is_general,
+
+    EXISTS (
+        SELECT 1
+        FROM weapons wp
+        WHERE wp.warscroll_id = w.id
+          AND wp."range" = 0
+    ) AS has_melee_weapon,
+
+    EXISTS (
+        SELECT 1
+        FROM weapons wp
+        WHERE wp.warscroll_id = w.id
+          AND wp."range" > 0
+    ) AS has_ranged_weapon
+
+FROM warscrolls w
+
+JOIN spearheads s
+    ON s.id = w.spearhead_id
+
+WHERE s.name = :spearheadName
+
+ORDER BY w.name;
+
+-- gets all weapons needed for that spearhead (ignores units)
+getCompiledWeapons AS CompiledWeapon:
+SELECT
+    s.name AS spearhead_name,
+
+    w.id AS warscroll_id,
+    w.name AS warscroll_name,
+
+    wp.name AS weapon_name,
+    wp."range",
+    wp.attacks,
+    wp.hit,
+    wp.wound,
+    wp.rend,
+    wp.damage,
+    wp.special_rule
+
+FROM weapons wp
+
+JOIN warscrolls w
+    ON w.id = wp.warscroll_id
+
+JOIN spearheads s
+    ON s.id = w.spearhead_id
+
+WHERE s.name = :spearheadName
+
+ORDER BY w.name, wp.name;
+
+-- gets all abilities for a warscroll
+getCompiledWarscrollAbilities AS CompiledWarscrollAbility:
+SELECT
+    s.name AS spearhead_name,
+
+    w.id AS warscroll_id,
+    w.name AS warscroll_name,
+
+    ab.id AS ability_id,
+    ab.name AS ability_name,
+    ab.type AS ability_type,
+    ab.timing,
+    ab.description
+
+FROM warscroll_abilities wa
+
+JOIN warscrolls w
+    ON w.id = wa.warscroll_id
+
+JOIN spearheads s
+    ON s.id = w.spearhead_id
+
+JOIN abilities ab
+    ON ab.id = wa.ability_id
+
+WHERE s.name = :spearheadName
+
+ORDER BY w.name, ab.name;
+
+getCompiledSpearheadRules AS CompiledSpearheadRule:
+SELECT
+    s.name AS spearhead_name,
+
+    sa.type AS rule_category,
+
+    ab.id AS ability_id,
+    ab.name AS ability_name,
+    ab.type AS ability_type,
+    ab.timing,
+    ab.description
+
+FROM spearhead_abilities sa
+
+JOIN abilities ab
+    ON ab.id = sa.ability_id
+
+JOIN spearheads s
+    ON s.id = sa.spearhead_id
+
+WHERE s.name = :spearheadName
+
+ORDER BY sa.type, ab.name;

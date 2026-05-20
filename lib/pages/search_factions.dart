@@ -14,13 +14,13 @@ class _SearchFactionsState extends State<SearchFactions> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: bar(),
+      appBar: _bar(),
       body: Center(
         child: SafeArea(
           child: Column( // Stack was unnecessary here unless adding background art
             children: [
               Spacer(),
-              search(_controller),
+              _search(_controller),
               Spacer(),
             ],
           ),
@@ -31,7 +31,7 @@ class _SearchFactionsState extends State<SearchFactions> {
 //----------------Styling elements---------------------
 
 //-------------App bar---------------------
-  AppBar bar()
+  AppBar _bar()
     =>AppBar
     (
         leading: IconButton(onPressed: () => Navigator.maybePop(context), icon: Icon(Icons.arrow_back_ios_new), ),
@@ -47,9 +47,9 @@ class _SearchFactionsState extends State<SearchFactions> {
     );
 
 // --------------------------- Search Controls -----------------------------------
-  SearchAnchor search(SearchController controller) => SearchAnchor(
+  SearchAnchor _search(SearchController controller) => SearchAnchor(
         viewBuilder: (suggestions) => ListView(children: suggestions.toList()),
-        builder: (BuildContext context, controller) => searchBar(controller),
+        builder: (BuildContext context, controller) => _searchBar(controller),
         suggestionsBuilder: (BuildContext context, controller) async {
           // Handle empty input to prevent searching for '%%'
           if (controller.text.isEmpty) {
@@ -89,7 +89,7 @@ class _SearchFactionsState extends State<SearchFactions> {
         },
       );
   ///Helps stylize the SearchController
-  Padding searchBar(SearchController controller) => Padding(
+  Padding _searchBar(SearchController controller) => Padding(
         padding: const EdgeInsets.all(16.0),
         child: SearchBar(
           elevation: WidgetStateProperty.all(2.0),

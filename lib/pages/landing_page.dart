@@ -10,11 +10,11 @@ class LandingPage extends StatelessWidget {
 //----------------Build UI-----------------------------------
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: defaultBar(),
+      appBar: _defaultBar(),
       backgroundColor: Colors.blueGrey,
       body: Stack(
         children: [
-          Center(child: newGameButton(context)),
+          Center(child: _newGameButton(context)),
         ], //Stack Children end
       ),
     );
@@ -22,7 +22,7 @@ class LandingPage extends StatelessWidget {
 
 //--------------------------Styling elements---------------------------------
 
-  Row newGameButton(BuildContext context) 
+  Row _newGameButton(BuildContext context) 
   => Row(
   mainAxisSize: MainAxisSize.min,
   children: [
@@ -58,12 +58,12 @@ class LandingPage extends StatelessWidget {
     
     const SizedBox(width: 2), //for a visual gap, more flexable than a spacer
 
-    newGameDropDown() 
+    _newGameDropDown() 
 
   ],
 );
 
-String determineText() {
+String _determineText() { //TODO: for later
   try {
       return (GameSettings().isVsMode) ? 'New Single Game' : 'new VS Game';
   } catch (e) {
@@ -71,7 +71,7 @@ String determineText() {
   } 
 }
 
-PopupMenuButton<String> newGameDropDown() 
+PopupMenuButton<String> _newGameDropDown() 
 =>PopupMenuButton<String>(
     offset: Offset(-5, 58),
     elevation: NG_BUTTON_ELEVATION,
@@ -115,25 +115,7 @@ PopupMenuButton<String> newGameDropDown()
     ),
   );
 
-  List<BoxShadow> subtleBoxShadow() =>
-    [
-      BoxShadow
-      (
-        color: Color.fromRGBO(0, 0, 0, 0.19),
-        blurRadius: 20,
-        spreadRadius: 0,
-        offset: Offset(5, 10),
-      ),
-        BoxShadow
-      (
-        color: Color.fromRGBO(0, 0, 0, 0.23),
-        blurRadius: 6,
-        spreadRadius: 0,
-        offset: Offset(5, 6),
-      )
-    ];
-
-  AppBar defaultBar()
+  AppBar _defaultBar()
     =>AppBar(
         title: Text(
           "Warhammer MVP",

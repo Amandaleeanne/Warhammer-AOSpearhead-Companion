@@ -4,7 +4,7 @@ import "package:warhammer/pages/army_viewer.dart";
 class PickRegiment extends StatelessWidget {
   //----- Variuble and constructor initalization -----
   final String spearheadName;
-  final String enhancementPick;
+  final int enhancementPick;
   const PickRegiment(this.spearheadName, this.enhancementPick, {super.key}); 
 
 // ---- Start UI work -------
@@ -28,7 +28,7 @@ class PickRegiment extends StatelessWidget {
                 (ability) => Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ArmyViewer(spearheadName, enhancementPick, ability.name.capitalize()),
+                    builder: (context) => ArmyViewer(spearheadName, enhancementPick, ability.id),
                   ),
                   (route) => (route.settings.name == 'LandingPage' || route.isFirst) ? true : false,
                 ),
@@ -40,7 +40,7 @@ class PickRegiment extends StatelessWidget {
     );
   }
 
-//-----------------Styling Elements----------------
+//----------------- Used and Exported Styling Elements (see pick_enhancement)----------------
 ///The text at the top of the bar on both the Army Enhancement screen and the Pick regement ability screen. "Exported" by PickRegiment
   static Expanded titleText(BuildContext context, String imagePath, String text) => Expanded(
         child: Column(

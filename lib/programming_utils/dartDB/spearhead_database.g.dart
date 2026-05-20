@@ -2970,21 +2970,87 @@ abstract class _$WarhammerDatabase extends GeneratedDatabase {
     ).asyncMap(abilities.mapFromRow);
   }
 
-  Selectable<ReferenceResult> getSpearheadReference(int spearheadId) {
+  Selectable<CompiledUnit> getCompiledUnits(String spearheadName) {
     return customSelect(
-      'SELECT \'spearhead\' AS source, sa.type, ab.name, ab.description FROM spearhead_abilities AS sa JOIN abilities AS ab ON ab.id = sa.ability_id WHERE sa.spearhead_id = ?1 UNION ALL SELECT \'warscroll\' AS source, NULL AS type, ab.name, ab.description FROM warscrolls AS w JOIN warscroll_abilities AS wa ON wa.warscroll_id = w.id JOIN abilities AS ab ON ab.id = wa.ability_id WHERE w.spearhead_id = ?1',
-      variables: [Variable<int>(spearheadId)],
-      readsFrom: {
-        spearheadAbilities,
-        abilities,
-        warscrolls,
-        warscrollAbilities,
-      },
+      'SELECT s.name AS spearhead_name, w.id AS warscroll_id, w.name AS warscroll_name, w.image_path, w.move, w.health, w.save, w.ward, w.control, w.is_general, EXISTS (SELECT 1 AS _c0 FROM weapons AS wp WHERE wp.warscroll_id = w.id AND wp."range" = 0) AS has_melee_weapon, EXISTS (SELECT 1 AS _c1 FROM weapons AS wp WHERE wp.warscroll_id = w.id AND wp."range" > 0) AS has_ranged_weapon FROM warscrolls AS w JOIN spearheads AS s ON s.id = w.spearhead_id WHERE s.name = ?1 ORDER BY w.name',
+      variables: [Variable<String>(spearheadName)],
+      readsFrom: {spearheads, warscrolls, weapons},
     ).map(
-      (QueryRow row) => ReferenceResult(
-        source: row.read<String>('source'),
-        type: row.readNullable<String>('type'),
-        name: row.read<String>('name'),
+      (QueryRow row) => CompiledUnit(
+        spearheadName: row.read<String>('spearhead_name'),
+        warscrollId: row.read<int>('warscroll_id'),
+        warscrollName: row.read<String>('warscroll_name'),
+        imagePath: row.readNullable<String>('image_path'),
+        move: row.read<int>('move'),
+        health: row.read<int>('health'),
+        save: row.read<int>('save'),
+        ward: row.readNullable<int>('ward'),
+        control: row.read<int>('control'),
+        isGeneral: row.read<bool>('is_general'),
+        hasMeleeWeapon: row.read<bool>('has_melee_weapon'),
+        hasRangedWeapon: row.read<bool>('has_ranged_weapon'),
+      ),
+    );
+  }
+
+  Selectable<CompiledWeapon> getCompiledWeapons(String spearheadName) {
+    return customSelect(
+      'SELECT s.name AS spearhead_name, w.id AS warscroll_id, w.name AS warscroll_name, wp.name AS weapon_name, wp."range", wp.attacks, wp.hit, wp.wound, wp.rend, wp.damage, wp.special_rule FROM weapons AS wp JOIN warscrolls AS w ON w.id = wp.warscroll_id JOIN spearheads AS s ON s.id = w.spearhead_id WHERE s.name = ?1 ORDER BY w.name, wp.name',
+      variables: [Variable<String>(spearheadName)],
+      readsFrom: {spearheads, warscrolls, weapons},
+    ).map(
+      (QueryRow row) => CompiledWeapon(
+        spearheadName: row.read<String>('spearhead_name'),
+        warscrollId: row.read<int>('warscroll_id'),
+        warscrollName: row.read<String>('warscroll_name'),
+        weaponName: row.read<String>('weapon_name'),
+        range: row.read<int>('range'),
+        attacks: row.read<String>('attacks'),
+        hit: row.read<int>('hit'),
+        wound: row.read<int>('wound'),
+        rend: row.read<int>('rend'),
+        damage: row.read<String>('damage'),
+        specialRule: row.readNullable<String>('special_rule'),
+      ),
+    );
+  }
+
+  Selectable<CompiledWarscrollAbility> getCompiledWarscrollAbilities(
+    String spearheadName,
+  ) {
+    return customSelect(
+      'SELECT s.name AS spearhead_name, w.id AS warscroll_id, w.name AS warscroll_name, ab.id AS ability_id, ab.name AS ability_name, ab.type AS ability_type, ab.timing, ab.description FROM warscroll_abilities AS wa JOIN warscrolls AS w ON w.id = wa.warscroll_id JOIN spearheads AS s ON s.id = w.spearhead_id JOIN abilities AS ab ON ab.id = wa.ability_id WHERE s.name = ?1 ORDER BY w.name, ab.name',
+      variables: [Variable<String>(spearheadName)],
+      readsFrom: {spearheads, warscrolls, abilities, warscrollAbilities},
+    ).map(
+      (QueryRow row) => CompiledWarscrollAbility(
+        spearheadName: row.read<String>('spearhead_name'),
+        warscrollId: row.read<int>('warscroll_id'),
+        warscrollName: row.read<String>('warscroll_name'),
+        abilityId: row.read<int>('ability_id'),
+        abilityName: row.read<String>('ability_name'),
+        abilityType: row.read<String>('ability_type'),
+        timing: row.readNullable<String>('timing'),
+        description: row.read<String>('description'),
+      ),
+    );
+  }
+
+  Selectable<CompiledSpearheadRule> getCompiledSpearheadRules(
+    String spearheadName,
+  ) {
+    return customSelect(
+      'SELECT s.name AS spearhead_name, sa.type AS rule_category, ab.id AS ability_id, ab.name AS ability_name, ab.type AS ability_type, ab.timing, ab.description FROM spearhead_abilities AS sa JOIN abilities AS ab ON ab.id = sa.ability_id JOIN spearheads AS s ON s.id = sa.spearhead_id WHERE s.name = ?1 ORDER BY sa.type, ab.name',
+      variables: [Variable<String>(spearheadName)],
+      readsFrom: {spearheads, spearheadAbilities, abilities},
+    ).map(
+      (QueryRow row) => CompiledSpearheadRule(
+        spearheadName: row.read<String>('spearhead_name'),
+        ruleCategory: row.read<String>('rule_category'),
+        abilityId: row.read<int>('ability_id'),
+        abilityName: row.read<String>('ability_name'),
+        abilityType: row.read<String>('ability_type'),
+        timing: row.readNullable<String>('timing'),
         description: row.read<String>('description'),
       ),
     );
@@ -6561,15 +6627,98 @@ class AbilityData {
   });
 }
 
-class ReferenceResult {
-  final String source;
-  final String? type;
-  final String name;
+class CompiledUnit {
+  final String spearheadName;
+  final int warscrollId;
+  final String warscrollName;
+  final String? imagePath;
+  final int move;
+  final int health;
+  final int save;
+  final int? ward;
+  final int control;
+  final bool isGeneral;
+  final bool hasMeleeWeapon;
+  final bool hasRangedWeapon;
+  CompiledUnit({
+    required this.spearheadName,
+    required this.warscrollId,
+    required this.warscrollName,
+    this.imagePath,
+    required this.move,
+    required this.health,
+    required this.save,
+    this.ward,
+    required this.control,
+    required this.isGeneral,
+    required this.hasMeleeWeapon,
+    required this.hasRangedWeapon,
+  });
+}
+
+class CompiledWeapon {
+  final String spearheadName;
+  final int warscrollId;
+  final String warscrollName;
+  final String weaponName;
+  final int range;
+  final String attacks;
+  final int hit;
+  final int wound;
+  final int rend;
+  final String damage;
+  final String? specialRule;
+  CompiledWeapon({
+    required this.spearheadName,
+    required this.warscrollId,
+    required this.warscrollName,
+    required this.weaponName,
+    required this.range,
+    required this.attacks,
+    required this.hit,
+    required this.wound,
+    required this.rend,
+    required this.damage,
+    this.specialRule,
+  });
+}
+
+class CompiledWarscrollAbility {
+  final String spearheadName;
+  final int warscrollId;
+  final String warscrollName;
+  final int abilityId;
+  final String abilityName;
+  final String abilityType;
+  final String? timing;
   final String description;
-  ReferenceResult({
-    required this.source,
-    this.type,
-    required this.name,
+  CompiledWarscrollAbility({
+    required this.spearheadName,
+    required this.warscrollId,
+    required this.warscrollName,
+    required this.abilityId,
+    required this.abilityName,
+    required this.abilityType,
+    this.timing,
+    required this.description,
+  });
+}
+
+class CompiledSpearheadRule {
+  final String spearheadName;
+  final String ruleCategory;
+  final int abilityId;
+  final String abilityName;
+  final String abilityType;
+  final String? timing;
+  final String description;
+  CompiledSpearheadRule({
+    required this.spearheadName,
+    required this.ruleCategory,
+    required this.abilityId,
+    required this.abilityName,
+    required this.abilityType,
+    this.timing,
     required this.description,
   });
 }

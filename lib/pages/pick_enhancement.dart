@@ -26,7 +26,7 @@ class PickEnhancement extends StatelessWidget {
                 (ability) => Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => PickRegiment(spearheadName, ability.name.capitalize()),
+                    builder: (_) => PickRegiment(spearheadName, ability.id),
                   ),
                 ),
               ),

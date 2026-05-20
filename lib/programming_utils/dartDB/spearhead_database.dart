@@ -5,7 +5,7 @@ import 'package:drift/native.dart'; // For NativeDatabase
 import 'package:path_provider/path_provider.dart'; // To find the app's folder
 import 'package:path/path.dart' as p; // To join folder paths safely
 import 'package:flutter/services.dart' show rootBundle; // To load your asset
-
+import 'package:warhammer/programming_utils/dartDB/compiledSpearhead.dart'; //imports the models
 part 'spearhead_database.g.dart';
 
 @DriftDatabase(
@@ -17,6 +17,108 @@ class WarhammerDatabase extends _$WarhammerDatabase {
 
   @override
   int get schemaVersion => 1;
+
+  Future<ActiveSpearhead> getActiveSpearhead({
+  required String spearheadName,
+  required int regimentAbilityId,
+  required int enhancementAbilityId,
+}) async {
+
+  final units =
+      await getCompiledUnits(spearheadName).get();
+
+  final weapons =
+      await getCompiledWeapons(spearheadName).get();
+
+  final abilities =
+      await getCompiledWarscrollAbilities(
+        spearheadName,
+      ).get();
+
+  final rules =
+      await getCompiledSpearheadRules(
+        spearheadName,
+      ).get();
+
+  // =====================================
+  // GROUP WEAPONS
+  // =====================================
+
+  final weaponsByWarscroll =
+      <int, List<CompiledWeapon>>{};
+
+  for (final weapon in weapons) {
+    weaponsByWarscroll
+        .putIfAbsent(
+          weapon.warscrollId,
+          () => [],
+        )
+        .add(weapon);
+  }
+
+  // =====================================
+  // GROUP ABILITIES
+  // =====================================
+
+  final abilitiesByWarscroll =
+      <int, List<CompiledWarscrollAbility>>{};
+
+  for (final ability in abilities) {
+    abilitiesByWarscroll
+        .putIfAbsent(
+          ability.warscrollId,
+          () => [],
+        )
+        .add(ability);
+  }
+
+  // =====================================
+  // BUILD ACTIVE UNITS
+  // =====================================
+
+  final activeUnits = units.map((unit) {
+
+    return ActiveUnit(
+      unit: unit,
+      weapons:
+          weaponsByWarscroll[unit.warscrollId] ?? [],
+      abilities:
+          abilitiesByWarscroll[unit.warscrollId] ?? [],
+    );
+
+  }).toList();
+
+  // =====================================
+  // FILTER RULES
+  // =====================================
+
+  final battleTraits = rules.where(
+    (r) => r.ruleCategory == 'battle trait',
+  );
+
+  final regimentAbility = rules.firstWhere(
+    (r) => r.abilityId == regimentAbilityId,
+  );
+
+  final enhancement = rules.firstWhere(
+    (r) => r.abilityId == enhancementAbilityId,
+  );
+
+  final activeRules = [
+    ...battleTraits,
+    regimentAbility,
+    enhancement,
+  ];
+
+  return ActiveSpearhead(
+    spearheadName: spearheadName,
+    units: activeUnits,
+    activeRules: activeRules,
+    selectedRegimentAbility: regimentAbility,
+    selectedEnhancement: enhancement,
+  );
+}
+
 }
 
 /// actual connection logic

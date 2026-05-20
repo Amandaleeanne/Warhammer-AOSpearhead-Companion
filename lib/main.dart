@@ -5,7 +5,7 @@ import 'package:warhammer/pages/landing_page.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final spearheads = WarhammerDatabase();
-  final isVsMode = false;
+  //final isVsMode = false; TODO: add VSMode
   runApp(
     MultiProvider(
       providers: [

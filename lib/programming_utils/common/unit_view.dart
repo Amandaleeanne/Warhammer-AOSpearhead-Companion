@@ -1,7 +1,9 @@
 import 'package:warhammer/global_imports.dart';
+import 'package:warhammer/programming_utils/dartDB/compiledSpearhead.dart';
 
 class UnitViewContent extends StatefulWidget {
-  const UnitViewContent({super.key});
+  final ActiveSpearhead db;
+  const UnitViewContent({required this.db, super.key});
 
   @override
   State<UnitViewContent> createState() => _UnitViewContentState();
@@ -12,14 +14,14 @@ class _UnitViewContentState extends State<UnitViewContent> {
   Widget build(BuildContext context) {
     return ListView.separated(
       padding: const EdgeInsets.all(16),
-      itemCount: 8, // Number of units to display
+      itemCount: widget.db.units.length, // Number of units to display
       separatorBuilder: (context, index) => const SizedBox(height: 6),
       itemBuilder: (context, index) { //Builds each info card
         return Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             // Unit Avatar Placeholder
-           imageBuilder(70, 70, "assets/images/missingTexture.PNG"),
+           _imageBuilder(70, 70, "assets/images/missingTexture.PNG", 16), //TODO: replace with correct image (gotta make it tho)
             const SizedBox(width: 16),
             
             // Unit Stats Columns
@@ -28,7 +30,7 @@ class _UnitViewContentState extends State<UnitViewContent> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Unit name',
+                    widget.db.units[index].name.capitalize(),
                     style: const TextStyle(
                       fontSize: 18, 
                       fontWeight: FontWeight.bold,
@@ -37,11 +39,11 @@ class _UnitViewContentState extends State<UnitViewContent> {
                   const SizedBox(height: 4),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
-                      _StatColumn(label: 'Move', value: '0"'),
-                      _StatColumn(label: 'Health', value: '5'),
-                      _StatColumn(label: 'Control', value: '2'),
-                      _StatColumn(label: 'Save', value: '5+'),
+                    children: [
+                      _StatColumn(label: 'Move', value: '${widget.db.units[index].move}"'),
+                      _StatColumn(label: 'Health', value: '${widget.db.units[index].health}'),
+                      _StatColumn(label: 'Control', value: '${widget.db.units[index].control}'),
+                      _StatColumn(label: 'Save', value: '${widget.db.units[index].save}'),
                     ],
                   ),
                 ],
@@ -49,16 +51,10 @@ class _UnitViewContentState extends State<UnitViewContent> {
             ),
             const SizedBox(width: 16),
             
-            // Action Weapons Icons Placeholder
+            // Action Weapons Icons Placeholder -> need to dynamically update based on if there is a weapon or one
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-              child: Column(
-                children: [
-                  imageBuilder(40, 40, "assets/images/missingTexture.PNG"),
-                  SizedBox(height: 8),
-                  imageBuilder(40, 40, "assets/images/missingTexture.PNG"),
-                ],
-              ),
+              child: _determineIcons(index)
             ),
           ],
         );
@@ -66,17 +62,49 @@ class _UnitViewContentState extends State<UnitViewContent> {
     );
   }
 
+  Widget _determineIcons(int index)
+  {
+    ActiveUnit currUnit = widget.db.units[index];
+    if (currUnit.hasRangedWeapon && currUnit.hasMeleeWeapon)
+    {
+      return _drawMeleeAndRangedIcons();
+    } else if (currUnit.hasRangedWeapon && !currUnit.hasMeleeWeapon)
+    {
+      return _drawRangedIcon();
+    }else if(!currUnit.hasRangedWeapon && currUnit.hasMeleeWeapon)
+    {
+      return _drawMeleeIcon();
+    }
+    return Column(children: [Text("ERROR!")],); //uh oh completed with an error!
+
+  }
+
+  Widget _drawRangedIcon()
+  =>_imageBuilder(40, 40, "assets/images/bow.png", 1); //TODO: replace with ranged icon
+
+  Widget _drawMeleeIcon()
+  =>_imageBuilder(40, 40, "assets/images/swordBlank.png", 1); //TODO: replace with ranged icon
+
+  Column _drawMeleeAndRangedIcons()
+  =>Column(
+        children: [
+          _drawMeleeIcon(),
+          SizedBox(height: 8),
+          _drawRangedIcon()
+        ]
+      );
+
   //Image builder
-  Widget imageBuilder(double width, double height, String path) 
+  Widget _imageBuilder(double width, double height, String path, double radius) 
   => Container(
         width: width,
         height: height,
         decoration: BoxDecoration(
-          color: Colors.grey[200], // Fallback background color while loading
-          borderRadius: BorderRadius.circular(12), 
+          color: Colors.transparent, // Fallback background color while loading
+          borderRadius: BorderRadius.circular(radius), 
           image: DecorationImage(
             image: AssetImage(path), 
-            fit: BoxFit.cover, 
+            fit: BoxFit.scaleDown, 
           ),
         ),
       );

@@ -10,7 +10,7 @@ export 'package:warhammer/programming_utils/common/utils.dart';
 // Retrieved 2026-05-06, License - CC BY-SA 4.0
 extension StringExtension on String {
     String capitalize() {
-      return "${this[0].toUpperCase()}${this.substring(1).toLowerCase()}";
+      return "${this[0].toUpperCase()}${substring(1).toLowerCase()}";
     }
 }
 
