@@ -107,6 +107,12 @@ class ActiveSpearhead
     return mergedList;
   }
 
+  // ----------- Universal Weapon filters -------------
+  List<CompiledWeapon> allMeleeWeapons() 
+  => units.expand((u) => u.meleeWeapons).toList();
+  List<CompiledWeapon> allRangedWeapons() 
+  => units.expand((u) => u.rangedWeapons).toList();
+
 }
 
 class ActiveUnit {

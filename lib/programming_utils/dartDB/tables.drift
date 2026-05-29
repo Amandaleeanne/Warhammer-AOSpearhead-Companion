@@ -233,7 +233,7 @@ JOIN abilities ab
 WHERE s.name = :spearheadName
 
 ORDER BY w.name, ab.name;
-
+-- Gets ALL rules 
 getCompiledSpearheadRules AS CompiledSpearheadRule:
 SELECT
     s.name AS spearhead_name,

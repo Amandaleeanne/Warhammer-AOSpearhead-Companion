@@ -92,20 +92,27 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
   //I need to take a step back and thourghouly think about what will be displayed on the phase view.
   Widget _buildSubViewBody() {
     ActiveSpearhead spearhead = widget.spearheadData;
-    List<CompiledWarscrollAbility> empty = []; //TODO: TEMPORARY EMPTY COMPAILEDWARSCROLL BECAUSE I AM UNSURE OF CERTAIN PHASES, FIX
     switch (_currentSubView) {
       case PhaseSubView.hero:
         return _switchBuilder(spearhead.allAbilitiesFiltered(phase: AbilityPhase.heroPhase)); //TODO: posible bug with "your hero phase" should probably be generalized at some point.
       case PhaseSubView.move:
-        return _switchBuilder(empty);
+        return _switchBuilder(spearhead.allAbilitiesFiltered(phase: AbilityPhase.movementPhase));
       case PhaseSubView.ranged:
-        return _switchBuilder(empty);
+        return  ListView( //TODO: Might wanna add a setting to have the user select if they want to have the abilities (_switchBuilder) or weapons display first
+          children: [
+            _switchBuilder(spearhead.allAbilitiesFiltered(phase: AbilityPhase.shootingPhase)),
+          ],
+        );
       case PhaseSubView.charge:
-        return _switchBuilder(empty);
+        return _switchBuilder(spearhead.allAbilitiesFiltered(phase: AbilityPhase.chargePhase));
       case PhaseSubView.fight:
-        return _switchBuilder(empty);
+        return  ListView( //TODO: Might wanna add a setting to have the user select if they want to have the abilities (_switchBuilder) or weapons display first
+          children: [
+            _switchBuilder(spearhead.allAbilitiesFiltered(phase: AbilityPhase.combatPhase)),
+          ],
+        );
       case PhaseSubView.endOfTurn:
-        return _switchBuilder(empty);
+        return _switchBuilder(spearhead.mergedAllEndOfTurn_PhaseAbilities);
     }
   }
   
@@ -143,15 +150,17 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
       itemBuilder: (context, index) {
         final ability = spearheadAbilites[index];
         return abilityCard(
-          usage: ability.abilityType,
-          title: ability.abilityName,
-          description: ability.description,
+          usage: ability.abilityType.capitalize(),
+          title: ability.abilityName.capitalize(),
+          description: ability.description.capitalize(),
         );
       },
     );
   }
 
-  //TODO: Find a way to export this to utils, fsr it wasnt working to import it
+// -----------------------------------------------------------------------------
+// TODO: PORT TO UTILS BUT THEY LIVE HERE FOR NOW (wasnt working to import it)
+// ------------------------------------------------------------------------
   Widget abilityCard({
           required String usage, required String title,
           required String description, IconData icon = Icons.hide_image}) 
@@ -191,5 +200,10 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
       ),
     ),
   );
+  
+  // Widget weaponCardList({List<CompiledWeapon>? displayWeapons})
+  // {
+  //   return 
+  // }
 
 }
