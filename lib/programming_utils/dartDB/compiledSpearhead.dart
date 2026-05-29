@@ -1,6 +1,9 @@
+// ignore_for_file: non_constant_identifier_names
+
 import 'package:warhammer/global_imports.dart';
 
-class ActiveSpearhead {
+class ActiveSpearhead 
+{
 
   final String spearheadName;
 
@@ -35,38 +38,73 @@ class ActiveSpearhead {
       spearheadName.hashCode ^
       selectedRegimentAbility.hashCode ^
       selectedEnhancement.hashCode;
+  // --- Army stuff -----
+    ///Gets any and all battle traits (no filter)
+    List<CompiledSpearheadRule> get battleTraits =>
+      activeRules.where(
+        (r) => r.ruleCategory == 'battle trait',
+      ).toList();
 
-  // ------------ Universal filters -----------
 
-  List<CompiledWarscrollAbility> get allPassiveAbilities =>
-    units.expand((u) => u.passiveAbilities).toList();
+    ///Gets all Battle Traits in the ActiveSpearhead
+    ///
+    ///Example:
+    ///```
+    ///activeSpearhead.battleTraitsFiltered(
+    ///  phase: AbilityPhase.heroPhase,
+    ///  type: AbilityType.passive,
+    /// );
+    /// ```
+    ///```battleTraitsFiltered()``` => returns everything
+    ///
+    ///```battleTraitsFiltered(phase: [hero etc..])``` => returns everything filtered by phase
+    ///
+    ///```battleTraitsFiltered(type: [passive etc..])``` => returns everything filtere by type
+    ///
+    ///```battleTraitsFiltered(phase: [hero etc..], type: [passive etc..])``` => filters by both
+    List<CompiledSpearheadRule> battleTraitsFiltered({AbilityPhase? phase,AbilityType? type}) {
+      return battleTraits.where((r) {
+        final matchesPhase =
+            phase == null ||
+            r.timing.toAbilityPhase() == phase;
+
+        final matchesType =
+            type == null ||
+            r.abilityType.toAbilityType() == type;
+
+        return matchesPhase && matchesType;
+      }).toList();
+    }
+
+  // ------------ Universal ability filters -----------
+  ///Gets all abilities in the ActiveSpearhead
+  ///
+  ///Example:
+  ///```
+  ///activeSpearhead.allAbilitiesFiltered(
+  ///  phase: AbilityPhase.heroPhase,
+  ///  type: AbilityType.passive,
+  /// );
+  /// ```
+  ///```allAbilitiesFiltered()``` => returns everything
+  ///
+  ///```allAbilitiesFiltered(phase: [hero etc..])``` => returns everything filtered by phase
+  ///
+  ///```allAbilitiesFiltered(type: [passive etc..])``` => returns everything filtere by type
+  ///
+  ///```allAbilitiesFiltered(phase: [hero etc..], type: [passive etc..])``` => filters by both
+  List<CompiledWarscrollAbility> allAbilitiesFiltered({AbilityPhase? phase,AbilityType? type}) 
+  =>units.expand((u) {
+      return u.abilityTraitsFiltered(
+        phase: phase,
+        type: type,
+      );
+    }).toList();
   
-  List<CompiledWarscrollAbility> get allHeroPhaseAbilities =>
-    units.expand((u) => u.heroPhaseAbilities).toList();
-
-  List<CompiledWarscrollAbility> get allMovementPhaseAbilities =>
-    units.expand((u) => u.movementPhaseAbilities).toList();
-  
-  List<CompiledWarscrollAbility> get allChargePhaseAbilities =>
-    units.expand((u) => u.chargePhaseAbilities).toList();
-
-  List<CompiledWarscrollAbility> get allRangedPhaseAbilities =>
-    units.expand((u) => u.rangedPhaseAbilities).toList();
-
-  List<CompiledWarscrollAbility> get allAnyCombatPhaseAbilities =>
-    units.expand((u) => u.anyCombatPhaseAbilities).toList();
-
-  List<CompiledWarscrollAbility> get allEndOfAnyTurnPhaseAbilities =>
-    units.expand((u) => u.endofanyturnPhaseAbilities).toList();
-  
-  List<CompiledWarscrollAbility> get allEndOfYourTurnPhaseAbilities =>
-    units.expand((u) => u.endofanyturnPhaseAbilities).toList();
-  
-  List<CompiledWarscrollAbility> get mergedAllEndOfTurnPhaseAbilities{
-    List<CompiledWarscrollAbility> mergedList =  units.expand((u) => u.endofanyturnPhaseAbilities).toList();
-    mergedList.addAll(units.expand((u) => u.endofanyturnPhaseAbilities).toList());
+  List<CompiledWarscrollAbility> get mergedAllEndOfTurn_PhaseAbilities{
+    List<CompiledWarscrollAbility> mergedList =  units.expand((u) => u.abilityTraitsFiltered(phase: AbilityPhase.endOfAnyTurn)).toList();
+    mergedList.addAll(units.expand((u) => u.abilityTraitsFiltered(phase: AbilityPhase.endOfYourTurn)).toList());
     return mergedList;
-
   }
 
 }
@@ -123,63 +161,21 @@ class ActiveUnit {
         (w) => w.range > 0,
       ).toList();
 
-  // -------------- Filtered Abilities ----------------
+  // -------------- Filtered Abilities and Phase----------------
 
-  // ----------- "Passive" ---------------------
-  List<CompiledWarscrollAbility> get passiveAbilities =>
-      abilities.where(
-        (a) => a.abilityType == 'passive'
-      ).toList();
+  List<CompiledWarscrollAbility> abilityTraitsFiltered({AbilityPhase? phase,AbilityType? type}) {
+     return abilities.where((r) {
+       final matchesPhase =
+           phase == null ||
+           r.timing.toAbilityPhase() == phase;
 
-  List<CompiledWarscrollAbility> get reactionAbilities =>
-      abilities.where(
-        (a) => a.abilityType == 'reaction'
-      ).toList();
+       final matchesType =
+           type == null ||
+           r.abilityType.toAbilityType() == type;
 
-  List<CompiledWarscrollAbility> get oncePerTurnAbilities =>
-      abilities.where(
-        (a) => a.abilityType == 'once per turn'
-      ).toList();
+       return matchesPhase && matchesType;
+     }).toList();
+   }
 
-  List<CompiledWarscrollAbility> get oncePerBattleAbilities =>
-      abilities.where(
-        (a) => a.abilityType == 'once per battle'
-      ).toList();
-
-  //----------- Phase Getters --------------------
-  List<CompiledWarscrollAbility> get heroPhaseAbilities =>
-  abilities.where(
-        (a) => a.timing == 'your hero phase'
-      ).toList();
-  
-  List<CompiledWarscrollAbility> get movementPhaseAbilities =>
-  abilities.where(
-        (a) => a.timing == 'your movement phase'
-      ).toList();
-
-  List<CompiledWarscrollAbility> get chargePhaseAbilities =>
-  abilities.where(
-        (a) => a.timing == 'your charge phase'
-      ).toList();
-
-  List<CompiledWarscrollAbility> get rangedPhaseAbilities =>
-  abilities.where(
-        (a) => a.timing == 'any shooting phase'
-      ).toList();
-
-  List<CompiledWarscrollAbility> get anyCombatPhaseAbilities =>
-  abilities.where(
-        (a) => a.timing == 'any combat phase'
-      ).toList();
-  
-  List<CompiledWarscrollAbility> get endofanyturnPhaseAbilities =>
-  abilities.where(
-        (a) => a.timing == 'end of any turn'
-      ).toList();
-
-  List<CompiledWarscrollAbility> get endofYourTurnPhaseAbilities =>
-  abilities.where(
-        (a) => a.timing == 'end of your turn'
-      ).toList();
     
 }

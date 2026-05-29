@@ -1,7 +1,7 @@
 import 'package:warhammer/global_imports.dart';
 import 'package:warhammer/programming_utils/common/utils.dart';
 import 'package:warhammer/programming_utils/dartDB/compiledSpearhead.dart';
-enum PhaseSubView { hero, move, ranged, charge, fight, endOfTurn }
+enum PhaseSubView { hero, move, ranged, charge, fight, endOfTurn } //Although a copy of Ability phase, it is not being reused for simplicty
 
 ///Class contains everything needed to populate the PhaseView of the Main Game Page (army_viewer.dart)
 class PhaseViewContent extends StatefulWidget {
@@ -95,7 +95,7 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
     List<CompiledWarscrollAbility> empty = []; //TODO: TEMPORARY EMPTY COMPAILEDWARSCROLL BECAUSE I AM UNSURE OF CERTAIN PHASES, FIX
     switch (_currentSubView) {
       case PhaseSubView.hero:
-        return _switchBuilder(spearhead.allHeroPhaseAbilities); //TODO: posible bug with "your hero phase" should probably be generalized at some point.
+        return _switchBuilder(spearhead.allAbilitiesFiltered(phase: AbilityPhase.heroPhase)); //TODO: posible bug with "your hero phase" should probably be generalized at some point.
       case PhaseSubView.move:
         return _switchBuilder(empty);
       case PhaseSubView.ranged:
@@ -108,8 +108,10 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
         return _switchBuilder(empty);
     }
   }
-
+  
+  ///Controls the logic for the phase view then sends it off to the UI controller or returns a UI "Null"
   Widget _switchBuilder(List<CompiledWarscrollAbility> spearheadAbilityPhase) {
+    //"UI Null"
     if (spearheadAbilityPhase.isEmpty) {
       return const Padding(
         padding: EdgeInsets.all(16.0),
@@ -120,25 +122,20 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
     //Check to see if the selected enhancement/regement ability or battle traits are part of the given phase
     //then makes a temporart edit of the given list
     List<CompiledWarscrollAbility> editedList = spearheadAbilityPhase;
+    ActiveSpearhead spearhead = widget.spearheadData;
+    //IF the current view is hero AND the enhancement/regiment/battle trait is in the hero phase and not passive
+      //is a enhancement/regement ability passive?
+      if(spearhead.selectedEnhancement.timing != 'passive')
+      {
+        //if not we can conclude it is active
+      }
+  //get all non passive battle traits and filter them by phase and given 
+    //add code to grab battle traits from activeSpearhead (need to edit ActiveSpearhead)
 
-    //IF the current view is hero AND the enhancement is in the hero phase and not null   
-
-
-    return ListView.builder(
-      key: ValueKey(editedList.length),
-      itemCount: editedList.length,
-      itemBuilder: (context, index) {
-        final ability = editedList[index];
-        return abilityCard(
-          usage: ability.abilityType,
-          title: ability.abilityName,
-          description: ability.description,
-        );
-      },
-    );
+    return _populateCards(editedList);
   }
 
-  // Widget _populateCards()
+  // Widget _populateCards() UI controller element
   // => Return a clickable card correctly gets all cards associated wtih a certain phase. 
   Widget _populateCards(List<CompiledWarscrollAbility> spearheadAbilites) {
     return ListView.builder(
