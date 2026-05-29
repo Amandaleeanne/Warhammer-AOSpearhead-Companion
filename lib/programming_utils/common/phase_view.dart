@@ -95,23 +95,17 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
     List<CompiledWarscrollAbility> empty = []; //TODO: TEMPORARY EMPTY COMPAILEDWARSCROLL BECAUSE I AM UNSURE OF CERTAIN PHASES, FIX
     switch (_currentSubView) {
       case PhaseSubView.hero:
-        return Center(key: ValueKey('hero'), child: ListView(
-          children: [
-              _switchBuilder(spearhead.allHeroPhaseAbilities),
-              
-            ],
-          ),
-        );
+        return _switchBuilder(spearhead.allHeroPhaseAbilities); //TODO: posible bug with "your hero phase" should probably be generalized at some point.
       case PhaseSubView.move:
-        return Center(key: ValueKey('move'), child: _switchBuilder(empty));
+        return _switchBuilder(empty);
       case PhaseSubView.ranged:
-        return  Center(key: ValueKey('ranged'), child: _switchBuilder(empty));
+        return _switchBuilder(empty);
       case PhaseSubView.charge:
-        return  Center(key: ValueKey('charge'), child: Text('Charge Rules & Distance'));
+        return _switchBuilder(empty);
       case PhaseSubView.fight:
-        return  Center(key: ValueKey('fight'), child: Text('Melee Phase Dashboard'));
+        return _switchBuilder(empty);
       case PhaseSubView.endOfTurn:
-        return  Center(key: ValueKey('endOfTurn'), child: Text('End Of turn shennanigans'));
+        return _switchBuilder(empty);
     }
   }
 
@@ -123,10 +117,18 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
       );
     }
 
+    //Check to see if the selected enhancement/regement ability or battle traits are part of the given phase
+    //then makes a temporart edit of the given list
+    List<CompiledWarscrollAbility> editedList = spearheadAbilityPhase;
+
+    //IF the current view is hero AND the enhancement is in the hero phase and not null   
+
+
     return ListView.builder(
-      itemCount: spearheadAbilityPhase.length,
+      key: ValueKey(editedList.length),
+      itemCount: editedList.length,
       itemBuilder: (context, index) {
-        final ability = spearheadAbilityPhase[index];
+        final ability = editedList[index];
         return abilityCard(
           usage: ability.abilityType,
           title: ability.abilityName,

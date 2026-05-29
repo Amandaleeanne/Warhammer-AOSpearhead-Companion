@@ -2972,7 +2972,7 @@ abstract class _$WarhammerDatabase extends GeneratedDatabase {
 
   Selectable<Ability> getEnhancements(String spearheadName) {
     return customSelect(
-      'SELECT ab.* FROM spearhead_abilities AS sa JOIN abilities AS ab ON ab.id = sa.ability_id JOIN spearheads AS s ON s.id = sa.spearhead_id WHERE s.name = ?1 AND sa.type = \'enhancements\'',
+      'SELECT ab.* FROM spearhead_abilities AS sa JOIN abilities AS ab ON ab.id = sa.ability_id JOIN spearheads AS s ON s.id = sa.spearhead_id WHERE s.name = ?1 AND sa.type = \'enhancement\'',
       variables: [Variable<String>(spearheadName)],
       readsFrom: {spearheadAbilities, abilities, spearheads},
     ).asyncMap(abilities.mapFromRow);

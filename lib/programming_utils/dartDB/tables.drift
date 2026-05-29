@@ -133,7 +133,7 @@ getEnhancements:
 	JOIN abilities ab ON ab.id = sa.ability_id
 	JOIN spearheads s ON s.id = sa.spearhead_id
 	WHERE s.name = :spearheadName
-	AND sa.type = 'enhancements';
+	AND sa.type = 'enhancement';
 
 --  Queries for making the selected spearhead cache "table" (Flattens the database)
 
