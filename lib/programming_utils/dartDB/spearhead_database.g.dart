@@ -2224,7 +2224,7 @@ class Ability extends DataClass implements Insertable<Ability> {
   final String type;
   final String? timing;
 
-  /// 'Start of Turn', 'Combat Phase', etc.
+  /// 'Start of Turn', 'Combat', etc.
   final String description;
   const Ability({
     required this.id,
@@ -2965,6 +2965,14 @@ abstract class _$WarhammerDatabase extends GeneratedDatabase {
   Selectable<Ability> getBattleTrait(String spearheadName) {
     return customSelect(
       'SELECT ab.* FROM spearhead_abilities AS sa JOIN abilities AS ab ON ab.id = sa.ability_id JOIN spearheads AS s ON s.id = sa.spearhead_id WHERE s.name = ?1 AND sa.type = \'battle trait\'',
+      variables: [Variable<String>(spearheadName)],
+      readsFrom: {spearheadAbilities, abilities, spearheads},
+    ).asyncMap(abilities.mapFromRow);
+  }
+
+  Selectable<Ability> getEnhancements(String spearheadName) {
+    return customSelect(
+      'SELECT ab.* FROM spearhead_abilities AS sa JOIN abilities AS ab ON ab.id = sa.ability_id JOIN spearheads AS s ON s.id = sa.spearhead_id WHERE s.name = ?1 AND sa.type = \'enhancements\'',
       variables: [Variable<String>(spearheadName)],
       readsFrom: {spearheadAbilities, abilities, spearheads},
     ).asyncMap(abilities.mapFromRow);

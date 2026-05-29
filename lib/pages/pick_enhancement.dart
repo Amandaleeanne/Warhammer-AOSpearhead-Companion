@@ -22,7 +22,7 @@ class PickEnhancement extends StatelessWidget {
               PickRegiment.titleText(context, 'assets/images/missingTexture.PNG', "Pick Army Enhancement"),
               PickRegiment.getSpearheadAbilityData(
                 context,
-                db.getBattleTrait(spearheadName).watch(),
+                db.getEnhancements(spearheadName).watch(),
                 (ability) => Navigator.push(
                   context,
                   MaterialPageRoute(

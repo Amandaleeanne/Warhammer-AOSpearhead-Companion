@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS abilities(
 			'passive','once per turn','once per battle',
 			'reaction','once per round'
 			)),
-	timing TEXT, -- 'Start of Turn', 'Combat Phase', etc.
+	timing TEXT, -- 'Start of Turn', 'Combat', etc.
 	description TEXT NOT NULL
 );
 
@@ -118,7 +118,7 @@ getRegimentAbility:
 	WHERE s.name = :spearheadName
 	AND sa.type = 'regiment ability';
 
--- for picking enhancements (pick enhancement page)
+-- for picking enhancements (Passives and such)
 getBattleTrait:
 	SELECT ab.*
 	FROM spearhead_abilities sa
@@ -126,6 +126,14 @@ getBattleTrait:
 	JOIN spearheads s ON s.id = sa.spearhead_id
 	WHERE s.name = :spearheadName
 	AND sa.type = 'battle trait';
+
+getEnhancements:
+	SELECT ab.*
+	FROM spearhead_abilities sa
+	JOIN abilities ab ON ab.id = sa.ability_id
+	JOIN spearheads s ON s.id = sa.spearhead_id
+	WHERE s.name = :spearheadName
+	AND sa.type = 'enhancements';
 
 --  Queries for making the selected spearhead cache "table" (Flattens the database)
 

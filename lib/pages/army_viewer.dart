@@ -164,9 +164,8 @@ class _ArmyViewerState extends State<ArmyViewer> {
         ],
       );
 
-  //TODO: Change this up to accept a function for the third argument to put into the onPressed
-  Widget _buildButton({required IconData icon, required String label}) 
-    => Expanded(
+  Widget _buildButton({required IconData icon,required String label, VoidCallback? onPressed,
+  }) => Expanded(
       child: ElevatedButton.icon(
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.white,
@@ -175,14 +174,33 @@ class _ArmyViewerState extends State<ArmyViewer> {
         ),
         icon: Icon(icon),
         label: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
-        onPressed: () {},
+        onPressed: onPressed,
       ),
     );
   
 
   Row _actionButtons() => Row(
         children: [
-          _buildButton(icon: Icons.star_border, label: 'Save Configuration'),
+          _buildButton(
+            icon: Icons.star_border,
+            label: 'Save Configuration',
+            onPressed: () {
+              if (_spearheadData != null) {
+                final savedConfigs =
+                    Provider.of<List<ActiveSpearhead>>(context, listen: false);
+                if (!savedConfigs.contains(_spearheadData)) {
+                  savedConfigs.add(_spearheadData!);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Configuration saved!')),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Configuration already saved!')),
+                  );
+                }
+              }
+            },
+          ),
           SizedBox(width: 12),
           _buildButton(icon: Icons.add_circle_outline, label: 'Save Game State'), //TODO: Edit this for later vs modes
         ],
@@ -310,6 +328,6 @@ class _ArmyViewerState extends State<ArmyViewer> {
 
   /// --------------------- Phase View -----------------------
   Widget _buildPhaseViewContent(ActiveSpearhead db) 
-  => PhaseViewContent(db: db, key: ValueKey('PhaseView'));
+  => PhaseViewContent(spearheadData: _spearheadData!, key: ValueKey('PhaseView'));
 
 }

@@ -63,6 +63,7 @@ class LandingPage extends StatelessWidget {
   ],
 );
 
+// ignore: unused_element
 String _determineText() { //TODO: for later
   try {
       return (GameSettings().isVsMode) ? 'New Single Game' : 'new VS Game';

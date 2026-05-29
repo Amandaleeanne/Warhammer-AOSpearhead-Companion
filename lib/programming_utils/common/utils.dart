@@ -83,4 +83,44 @@ class CommonUtils {
     ),
   );
   
+  static Card abilityCard({
+          required BuildContext context,required String usage, required String when, required String title,
+          required String description, IconData icon = Icons.hide_image}) 
+    => Card
+    (
+    elevation: 5.0,
+    child: ListTile(
+      title: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              title,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20.0,
+              ),
+            ),
+          ),
+          const Spacer(flex: 4),
+          Icon(icon), // This should be replaced with the spearhead faction image
+        ],
+      ),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text("$usage, $when",),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(description),
+          ),
+        ],
+      ),
+    ),
+  );
+
 }

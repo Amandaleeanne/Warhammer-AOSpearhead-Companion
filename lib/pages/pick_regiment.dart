@@ -1,5 +1,6 @@
 import "package:warhammer/global_imports.dart";
 import "package:warhammer/pages/army_viewer.dart";
+import 'package:warhammer/programming_utils/dartDB/compiledSpearhead.dart';
 
 class PickRegiment extends StatelessWidget {
   //----- Variuble and constructor initalization -----
@@ -28,7 +29,17 @@ class PickRegiment extends StatelessWidget {
                 (ability) => Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ArmyViewer(spearheadName, enhancementPick, ability.id),
+                    builder: (context) => MultiProvider(
+                      providers: [
+                        Provider<WarhammerDatabase>.value(
+                          value: Provider.of<WarhammerDatabase>(context, listen: false),
+                        ),
+                        Provider<List<ActiveSpearhead>>.value(
+                          value: Provider.of<List<ActiveSpearhead>>(context, listen: false),
+                        ),
+                      ],
+                      child: ArmyViewer(spearheadName, enhancementPick, ability.id),
+                    ),
                   ),
                   (route) => (route.settings.name == 'LandingPage' || route.isFirst) ? true : false,
                 ),
