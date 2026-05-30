@@ -65,6 +65,7 @@ extension AbilityTypeParsing on String {
   }
 }
 
+//TODO: add the case extentions for "any" and "Enemy" phase
 extension AbilityPhaseParsing on String? {
   AbilityPhase? toAbilityPhase() {
     switch (this) {

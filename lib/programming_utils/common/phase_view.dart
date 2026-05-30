@@ -2,6 +2,21 @@ import 'package:warhammer/global_imports.dart';
 import 'package:warhammer/programming_utils/common/utils.dart';
 import 'package:warhammer/programming_utils/dartDB/compiledSpearhead.dart';
 enum PhaseSubView { hero, move, ranged, charge, fight, endOfTurn } //Although a copy of Ability phase, it is not being reused for simplicty
+extension PhaseSubViewString on PhaseSubView
+{
+  String get phaseTiming{
+    switch(this)
+    {
+      case PhaseSubView.hero: return 'hero';
+      case PhaseSubView.move: return 'movement';
+      case PhaseSubView.ranged: return 'shooting';
+      case PhaseSubView.charge: return 'charge';
+      case PhaseSubView.fight: return 'combat';
+      case PhaseSubView.endOfTurn: return 'end';
+
+    }
+  }
+}
 
 ///Class contains everything needed to populate the PhaseView of the Main Game Page (army_viewer.dart)
 class PhaseViewContent extends StatefulWidget {
@@ -98,19 +113,11 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
       case PhaseSubView.move:
         return _switchBuilder(spearhead.allAbilitiesFiltered(phase: AbilityPhase.movementPhase));
       case PhaseSubView.ranged:
-        return  ListView( //TODO: Might wanna add a setting to have the user select if they want to have the abilities (_switchBuilder) or weapons display first
-          children: [
-            _switchBuilder(spearhead.allAbilitiesFiltered(phase: AbilityPhase.shootingPhase)),
-          ],
-        );
+        return  _switchBuilder(spearhead.allAbilitiesFiltered(phase: AbilityPhase.shootingPhase));
       case PhaseSubView.charge:
         return _switchBuilder(spearhead.allAbilitiesFiltered(phase: AbilityPhase.chargePhase));
       case PhaseSubView.fight:
-        return  ListView( //TODO: Might wanna add a setting to have the user select if they want to have the abilities (_switchBuilder) or weapons display first
-          children: [
-            _switchBuilder(spearhead.allAbilitiesFiltered(phase: AbilityPhase.combatPhase)),
-          ],
-        );
+        return  _switchBuilder(spearhead.allAbilitiesFiltered(phase: AbilityPhase.combatPhase));
       case PhaseSubView.endOfTurn:
         return _switchBuilder(spearhead.mergedAllEndOfTurn_PhaseAbilities);
     }
@@ -126,36 +133,97 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
       );
     }
 
-    //Check to see if the selected enhancement/regement ability or battle traits are part of the given phase
+    //TODO: Check to see if the selected enhancement/regement ability or battle traits are part of the given phase, Currently Hero phase seems to be working? either that or just enhancement picks
     //then makes a temporart edit of the given list
-    List<CompiledWarscrollAbility> editedList = spearheadAbilityPhase;
     ActiveSpearhead spearhead = widget.spearheadData;
-    //IF the current view is hero AND the enhancement/regiment/battle trait is in the hero phase and not passive
-      //is a enhancement/regement ability passive?
-      if(spearhead.selectedEnhancement.timing != 'passive')
-      {
-        //if not we can conclude it is active
-      }
-  //get all non passive battle traits and filter them by phase and given 
-    //add code to grab battle traits from activeSpearhead (need to edit ActiveSpearhead)
+    CompiledSpearheadRule enhancementPick = widget.spearheadData.selectedEnhancement;
+    CompiledSpearheadRule regimentPick = widget.spearheadData.selectedRegimentAbility;
+    //optimization for lazyBuilding
+    List<CompiledSpearheadRule> lazyBuildPicks = [];
+    //If the selected enhancement is part of the phase add it to the UI
+      if (_abilityIsPartOfPhase(enhancementPick)) lazyBuildPicks.add(enhancementPick);
+      //If the selected regigment ability is part of the phase, add it to the UI
+      if (_abilityIsPartOfPhase(regimentPick)) lazyBuildPicks.add(regimentPick);
 
-    return _populateCards(editedList);
+    return ListView(
+      key: ValueKey(_currentSubView),
+      children: [
+         _populateCards(spearheadAbilityPhase),
+        //populate so long as the picks arent empty
+        if(lazyBuildPicks.isNotEmpty)
+          _populateCardRules(lazyBuildPicks),
+        //If ANY battle traits aren't passive and are part of the phase, add it
+        if(spearhead.nonPassiveBattleTraits.isNotEmpty)
+        _populateCardRules(spearhead.nonPassiveBattleTraits.where((battleTrait) => battleTrait.timing!.contains(_currentSubView.phaseTiming) && battleTrait.abilityName != enhancementPick.abilityName).toList()),
+        //Populate out the fight phases TODO: Might wanna add a setting to have the user select if they want to have the abilities (_switchBuilder) or weapons display first
+        // if(_currentSubView == PhaseSubView.fight)
+        //   _populateCardWeapon(spearhead.allMeleeWeapons()),
+        // if(_currentSubView == PhaseSubView.ranged)
+        //   _populateCardWeapon(spearhead.allRangedWeapons())
+      ],
+    );
   }
 
   // Widget _populateCards() UI controller element
   // => Return a clickable card correctly gets all cards associated wtih a certain phase. 
   Widget _populateCards(List<CompiledWarscrollAbility> spearheadAbilites) {
-    return ListView.builder(
-      itemCount: spearheadAbilites.length,
-      itemBuilder: (context, index) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: List.generate(spearheadAbilites.length, (index) {
         final ability = spearheadAbilites[index];
         return abilityCard(
           usage: ability.abilityType.capitalize(),
           title: ability.abilityName.capitalize(),
           description: ability.description.capitalize(),
         );
-      },
+      }),
     );
+  }
+
+  Widget _populateCardRules(List<CompiledSpearheadRule> spearheadAbilites) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: List.generate(spearheadAbilites.length, (index) {
+        final ability = spearheadAbilites[index];
+        return abilityCard(
+          usage: ability.abilityType.capitalize(),
+          title: ability.abilityName.capitalize(),
+          description: ability.description.capitalize(),
+        );
+      }),
+    );
+  }
+
+    //TODO: need to stylize this and implement
+  //   Widget _populateCardWeapon(List<CompiledWeapon> spearheadAbilites) {
+  //   return ListView.builder(
+  //     itemCount: spearheadAbilites.length,
+  //     itemBuilder: (context, index) {
+  //       final ability = spearheadAbilites[index];
+  //       return weaponCard(
+  //         usage: ability.abilityType.capitalize(),
+  //         title: ability.abilityName.capitalize(),
+  //         description: ability.description.capitalize(),
+  //       );
+  //     },
+  //   );
+  // }
+
+
+
+  ///Checks the given CompiledWarscrollAbility and returns weather or not it is part of the current PhaseSubView
+  bool _abilityIsPartOfPhase(CompiledSpearheadRule ability)
+  {
+    //IF the current view is hero AND the enhancement/regiment/battle trait is in the hero phase and not passive
+      //is a enhancement/regement ability passive?
+      if (ability.abilityType != 'passive') {
+        //if not we can conclude it is active
+        //perform a null-safe timing check
+        if (ability.timing != null && ability.timing!.contains(_currentSubView.phaseTiming)) {
+          return true;
+        }
+      }
+    return false;
   }
 
 // -----------------------------------------------------------------------------
@@ -201,9 +269,10 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
     ),
   );
   
-  // Widget weaponCardList({List<CompiledWeapon>? displayWeapons})
+  //TODO: Finish weapon card
+  // Widget weaponCard(CompiledWeapon weapon)
   // {
-  //   return 
+    
   // }
 
 }
