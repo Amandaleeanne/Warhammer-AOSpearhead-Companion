@@ -153,7 +153,8 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
           _populateCardRules(lazyBuildPicks),
         //If ANY battle traits aren't passive and are part of the phase, add it
         if(spearhead.nonPassiveBattleTraits.isNotEmpty)
-        _populateCardRules(spearhead.nonPassiveBattleTraits.where((battleTrait) => (battleTrait.timing?.contains(_currentSubView.phaseTiming) ?? false) && battleTrait.abilityName != enhancementPick.abilityName && battleTrait.abilityName != regimentPick.abilityName).toList()),
+        //TODO: Fix doulbe representation bug (might just wanna pass the regiment and enhancement as parameters)
+        _populateCardRules(spearhead.nonPassiveBattleTraits.where((battleTrait) => ((battleTrait.timing?.contains(_currentSubView.phaseTiming)) ?? false)).toList()),
         //Populate out the fight phases TODO: Might wanna add a setting to have the user select if they want to have the abilities (_switchBuilder) or weapons display first
         // if(_currentSubView == PhaseSubView.fight)
         //   _populateCardWeapon(spearhead.allMeleeWeapons()),
