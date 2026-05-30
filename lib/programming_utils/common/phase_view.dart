@@ -125,25 +125,24 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
   
   ///Controls the logic for the phase view then sends it off to the UI controller or returns a UI "Null"
   Widget _switchBuilder(List<CompiledWarscrollAbility> spearheadAbilityPhase) {
-    //"UI Null"
-    if (spearheadAbilityPhase.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Center(child: Text('Nothing to do here')),
-      );
-    }
-
-    //TODO: Check to see if the selected enhancement/regement ability or battle traits are part of the given phase, Currently Hero phase seems to be working? either that or just enhancement picks
-    //then makes a temporart edit of the given list
+    //Init
     ActiveSpearhead spearhead = widget.spearheadData;
     CompiledSpearheadRule enhancementPick = widget.spearheadData.selectedEnhancement;
     CompiledSpearheadRule regimentPick = widget.spearheadData.selectedRegimentAbility;
-    //optimization for lazyBuilding
+    //optimization for lazyBuilding + adding enhancements to the viewer
     List<CompiledSpearheadRule> lazyBuildPicks = [];
     //If the selected enhancement is part of the phase add it to the UI
       if (_abilityIsPartOfPhase(enhancementPick)) lazyBuildPicks.add(enhancementPick);
       //If the selected regigment ability is part of the phase, add it to the UI
       if (_abilityIsPartOfPhase(regimentPick)) lazyBuildPicks.add(regimentPick);
+
+    //"UI Null"
+    if (spearheadAbilityPhase.isEmpty && lazyBuildPicks.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Center(child: Text('Nothing to do here')),
+      );
+    }
 
     return ListView(
       key: ValueKey(_currentSubView),
@@ -154,7 +153,7 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
           _populateCardRules(lazyBuildPicks),
         //If ANY battle traits aren't passive and are part of the phase, add it
         if(spearhead.nonPassiveBattleTraits.isNotEmpty)
-        _populateCardRules(spearhead.nonPassiveBattleTraits.where((battleTrait) => battleTrait.timing!.contains(_currentSubView.phaseTiming) && battleTrait.abilityName != enhancementPick.abilityName).toList()),
+        _populateCardRules(spearhead.nonPassiveBattleTraits.where((battleTrait) => (battleTrait.timing?.contains(_currentSubView.phaseTiming) ?? false) && battleTrait.abilityName != enhancementPick.abilityName && battleTrait.abilityName != regimentPick.abilityName).toList()),
         //Populate out the fight phases TODO: Might wanna add a setting to have the user select if they want to have the abilities (_switchBuilder) or weapons display first
         // if(_currentSubView == PhaseSubView.fight)
         //   _populateCardWeapon(spearhead.allMeleeWeapons()),
