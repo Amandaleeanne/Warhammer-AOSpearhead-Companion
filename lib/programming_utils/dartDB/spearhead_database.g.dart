@@ -3044,7 +3044,7 @@ abstract class _$WarhammerDatabase extends GeneratedDatabase {
     );
   }
 
-  Selectable<CompiledSpearheadRule> getCompiledSpearheadRules(
+  Selectable<CompiledSpearheadAbilities> getCompiledSpearheadAbilities(
     String spearheadName,
   ) {
     return customSelect(
@@ -3052,7 +3052,7 @@ abstract class _$WarhammerDatabase extends GeneratedDatabase {
       variables: [Variable<String>(spearheadName)],
       readsFrom: {spearheads, spearheadAbilities, abilities},
     ).map(
-      (QueryRow row) => CompiledSpearheadRule(
+      (QueryRow row) => CompiledSpearheadAbilities(
         spearheadName: row.read<String>('spearhead_name'),
         ruleCategory: row.read<String>('rule_category'),
         abilityId: row.read<int>('ability_id'),
@@ -6712,7 +6712,7 @@ class CompiledWarscrollAbility {
   });
 }
 
-class CompiledSpearheadRule {
+class CompiledSpearheadAbilities {
   final String spearheadName;
   final String ruleCategory;
   final int abilityId;
@@ -6720,7 +6720,7 @@ class CompiledSpearheadRule {
   final String abilityType;
   final String? timing;
   final String description;
-  CompiledSpearheadRule({
+  CompiledSpearheadAbilities({
     required this.spearheadName,
     required this.ruleCategory,
     required this.abilityId,

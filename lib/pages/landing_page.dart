@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:warhammer/global_imports.dart';
 import 'package:warhammer/pages/search_factions.dart';
 

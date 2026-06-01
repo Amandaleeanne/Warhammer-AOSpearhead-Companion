@@ -11,6 +11,8 @@ part 'spearhead_database.g.dart';
 @DriftDatabase(
   include: {'tables.drift'}, // links SQL definitions
 )
+
+/// Contains the model for the entire database and allows setup for ActiveSpearhead.
 class WarhammerDatabase extends _$WarhammerDatabase {
   // Update the constructor to call the connection logic automatically
   WarhammerDatabase() : super(_openConnection());
@@ -30,13 +32,13 @@ class WarhammerDatabase extends _$WarhammerDatabase {
   final weapons =
       await getCompiledWeapons(spearheadName).get();
 
-  final abilities =
+  final warscrollAbilities =
       await getCompiledWarscrollAbilities(
         spearheadName,
       ).get();
 
-  final rules =
-      await getCompiledSpearheadRules(
+  final spearheadAbilities =
+      await getCompiledSpearheadAbilities(
         spearheadName,
       ).get();
 
@@ -63,7 +65,7 @@ class WarhammerDatabase extends _$WarhammerDatabase {
   final abilitiesByWarscroll =
       <int, List<CompiledWarscrollAbility>>{};
 
-  for (final ability in abilities) {
+  for (final ability in warscrollAbilities) {
     abilitiesByWarscroll
         .putIfAbsent(
           ability.warscrollId,
@@ -92,15 +94,15 @@ class WarhammerDatabase extends _$WarhammerDatabase {
   // FILTER RULES
   // =====================================
 
-  final battleTraits = rules.where(
+  final battleTraits = spearheadAbilities.where(
     (r) => r.ruleCategory == 'battle trait',
   );
 
-  final regimentAbility = rules.firstWhere(
+  final regimentAbility = spearheadAbilities.firstWhere(
     (r) => r.abilityId == regimentAbilityId,
   );
 
-  final enhancement = rules.firstWhere(
+  final enhancement = spearheadAbilities.firstWhere(
     (r) => r.abilityId == enhancementAbilityId,
   );
 

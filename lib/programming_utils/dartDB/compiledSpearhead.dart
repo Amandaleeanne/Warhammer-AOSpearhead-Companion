@@ -4,17 +4,19 @@ import 'package:warhammer/global_imports.dart';
 
 class ActiveSpearhead 
 {
-
+  ///The name of this spearhead (not the army name)
   final String spearheadName;
-
+  ///All units within this spearhead
   final List<ActiveUnit> units;
 
-  final List<CompiledSpearheadRule> activeRules;
+  /// complete list of all battle traits, enhancements, regiment abilities in this spearhead
+  final List<CompiledSpearheadAbilities> activeRules; 
+  ///The Regiment ability that the user selected
+  final CompiledSpearheadAbilities selectedRegimentAbility; // cached regiement ability
+  ///The enhancement that the user selected
+  final CompiledSpearheadAbilities selectedEnhancement; // cached enhancement
 
-  final CompiledSpearheadRule selectedRegimentAbility;
-
-  final CompiledSpearheadRule selectedEnhancement;
-
+  ///Constructor for the class
   ActiveSpearhead({
     required this.spearheadName,
     required this.units,
@@ -39,17 +41,19 @@ class ActiveSpearhead
       selectedRegimentAbility.hashCode ^
       selectedEnhancement.hashCode;
   // --- Army stuff -----
+
     ///Gets any and all battle traits (no filter)
-    List<CompiledSpearheadRule> get battleTraits =>
+    List<CompiledSpearheadAbilities> get battleTraits =>
       activeRules.where(
         (r) => r.ruleCategory == 'battle trait',
       ).toList();
 
     ///Gets any and all non passive battle traits
-    List<CompiledSpearheadRule> get nonPassiveBattleTraits =>
-      activeRules.where(
+    List<CompiledSpearheadAbilities> get nonPassiveBattleTraits =>
+      battleTraits.where(
         (r) => r.abilityType != 'passive',
       ).toList();
+
     ///Gets all Battle Traits in the ActiveSpearhead
     ///
     ///Example:
@@ -66,7 +70,7 @@ class ActiveSpearhead
     ///```battleTraitsFiltered(type: [passive etc..])``` => returns everything filtere by type
     ///
     ///```battleTraitsFiltered(phase: [hero etc..], type: [passive etc..])``` => filters by both
-    List<CompiledSpearheadRule> battleTraitsFiltered({AbilityPhase? phase,AbilityType? type}) {
+    List<CompiledSpearheadAbilities> battleTraitsFiltered({AbilityPhase? phase,AbilityType? type}) {
       return battleTraits.where((r) {
         final matchesPhase =
             phase == null ||

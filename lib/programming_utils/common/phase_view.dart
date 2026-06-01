@@ -108,8 +108,9 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
   Widget _buildSubViewBody() {
     ActiveSpearhead spearhead = widget.spearheadData;
     switch (_currentSubView) {
+      //TODO: posible bug with "your hero phase" should probably be generalized at some point. Currently regex is handling it but I am unsure if that will be sufficient.
       case PhaseSubView.hero:
-        return _switchBuilder(spearhead.allAbilitiesFiltered(phase: AbilityPhase.heroPhase)); //TODO: posible bug with "your hero phase" should probably be generalized at some point.
+        return _switchBuilder(spearhead.allAbilitiesFiltered(phase: AbilityPhase.heroPhase)); 
       case PhaseSubView.move:
         return _switchBuilder(spearhead.allAbilitiesFiltered(phase: AbilityPhase.movementPhase));
       case PhaseSubView.ranged:
@@ -125,24 +126,25 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
   
   ///Controls the logic for the phase view then sends it off to the UI controller or returns a UI "Null"
   Widget _switchBuilder(List<CompiledWarscrollAbility> spearheadAbilityPhase) {
+
     //Init
-    ActiveSpearhead spearhead = widget.spearheadData;
-    CompiledSpearheadRule enhancementPick = widget.spearheadData.selectedEnhancement;
-    CompiledSpearheadRule regimentPick = widget.spearheadData.selectedRegimentAbility;
-    //optimization for lazyBuilding + adding enhancements to the viewer
-    List<CompiledSpearheadRule> lazyBuildPicks = [];
-    //If the selected enhancement is part of the phase add it to the UI
-      if (_abilityIsPartOfPhase(enhancementPick)) lazyBuildPicks.add(enhancementPick);
-      //If the selected regigment ability is part of the phase, add it to the UI
-      if (_abilityIsPartOfPhase(regimentPick)) lazyBuildPicks.add(regimentPick);
+      ActiveSpearhead spearhead= widget.spearheadData; //i dont wanna type this a bunch of times
+      List<CompiledSpearheadAbilities> battleTraits = spearhead.nonPassiveBattleTraits.where(
+                                                      (battleTrait) => ((battleTrait.timing?.contains(_currentSubView.phaseTiming)) ?? false)
+                                                    ).toList(); // <- optimization for mapping and queries
+
+    //optimization for allowing lazy adding enhancements and regiment picks to the viewer
+      List<CompiledSpearheadAbilities> lazyBuildPicks = [];
+        if (_abilityIsPartOfPhase(spearhead.selectedEnhancement)) lazyBuildPicks.add(spearhead.selectedEnhancement);
+        if (_abilityIsPartOfPhase(spearhead.selectedRegimentAbility)) lazyBuildPicks.add(spearhead.selectedRegimentAbility);
 
     //"UI Null"
-    if (spearheadAbilityPhase.isEmpty && lazyBuildPicks.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Center(child: Text('Nothing to do here')),
-      );
-    }
+      if (spearheadAbilityPhase.isEmpty && lazyBuildPicks.isEmpty && battleTraits.isEmpty) {
+        return const Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Center(child: Text('Nothing to do here')),
+        );
+      }
 
     return ListView(
       key: ValueKey(_currentSubView),
@@ -152,9 +154,10 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
         if(lazyBuildPicks.isNotEmpty)
           _populateCardRules(lazyBuildPicks),
         //If ANY battle traits aren't passive and are part of the phase, add it
-        if(spearhead.nonPassiveBattleTraits.isNotEmpty)
-        //TODO: Fix doulbe representation bug (might just wanna pass the regiment and enhancement as parameters)
-        _populateCardRules(spearhead.nonPassiveBattleTraits.where((battleTrait) => ((battleTrait.timing?.contains(_currentSubView.phaseTiming)) ?? false)).toList()),
+        if(battleTraits.isNotEmpty)
+          _populateCardRules(battleTraits),
+        
+        
         //Populate out the fight phases TODO: Might wanna add a setting to have the user select if they want to have the abilities (_switchBuilder) or weapons display first
         // if(_currentSubView == PhaseSubView.fight)
         //   _populateCardWeapon(spearhead.allMeleeWeapons()),
@@ -165,7 +168,7 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
   }
 
   // Widget _populateCards() UI controller element
-  // => Return a clickable card correctly gets all cards associated wtih a certain phase. 
+  // => Return a clickable card correctly gets all cards associated wtih a certain phase. TODO: Make it clickable and have it direct to the correct unit card popup
   Widget _populateCards(List<CompiledWarscrollAbility> spearheadAbilites) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -180,7 +183,7 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
     );
   }
 
-  Widget _populateCardRules(List<CompiledSpearheadRule> spearheadAbilites) {
+  Widget _populateCardRules(List<CompiledSpearheadAbilities> spearheadAbilites) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: List.generate(spearheadAbilites.length, (index) {
@@ -212,7 +215,7 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
 
 
   ///Checks the given CompiledWarscrollAbility and returns weather or not it is part of the current PhaseSubView
-  bool _abilityIsPartOfPhase(CompiledSpearheadRule ability)
+  bool _abilityIsPartOfPhase(CompiledSpearheadAbilities ability)
   {
     //IF the current view is hero AND the enhancement/regiment/battle trait is in the hero phase and not passive
       //is a enhancement/regement ability passive?
