@@ -22,7 +22,7 @@ class CommonUtils {
                 ),
       );
 //-----------------------------------------------------
-//Displays a rounded image with custom width and height.
+///Displays a rounded image with custom width and height.
   static SizedBox roundedImage({required double width, required double height, required String imagePath}) =>
   SizedBox(
             width: width,
@@ -41,9 +41,9 @@ class CommonUtils {
             ),
           );
 //-----------------------------------------------------
-//Displays data given the strings and preforms a function based on onTap if given
+///Displays data given the strings and preforms a function based on onTap if given
   static Card abilityCardNavigator({
-          required BuildContext context,required String usage,required String title,
+          required String usage,required String title, String? when,
           required String description, VoidCallback? onTap, IconData icon = Icons.hide_image}) 
     => Card
     (
@@ -72,7 +72,7 @@ class CommonUtils {
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Text(usage),
+            child: Text(when == null ? usage : "$usage on $when"),
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -82,9 +82,9 @@ class CommonUtils {
       ),
     ),
   );
-  
+  ///Displays an ability card with no navigaton
   static Card abilityCard({
-          required BuildContext context,required String usage, required String when, required String title,
+          required String usage, String? who, required String title,
           required String description, IconData icon = Icons.hide_image}) 
     => Card
     (
@@ -112,7 +112,7 @@ class CommonUtils {
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Text("$usage, $when",),
+            child: Text(who != null ? "Used $usage by $who": "Used $usage"),
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -122,5 +122,28 @@ class CommonUtils {
       ),
     ),
   );
+
+  ///Draws that ranged icon
+  static Widget drawRangedIcon({double width = 40, double height = 40})
+  =>imageBuilder(width, height, "assets/images/bow.png", 1);
+  ///Draws the Melee Icon
+  static Widget drawMeleeIcon({double width = 40, double height = 40})
+  =>imageBuilder(width, height, "assets/images/swordBlank.png", 1);
+
+  
+  //Image builder
+  static Widget imageBuilder(double width, double height, String path, double radius) 
+  => Container(
+        width: width,
+        height: height,
+        decoration: BoxDecoration(
+          color: Colors.transparent, // Fallback background color while loading
+          borderRadius: BorderRadius.circular(radius), 
+          image: DecorationImage(
+            image: AssetImage(path), 
+            fit: BoxFit.scaleDown, 
+          ),
+        ),
+      );
 
 }

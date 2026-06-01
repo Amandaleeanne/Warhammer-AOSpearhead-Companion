@@ -36,7 +36,7 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 8.0),
+          padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5.0),
           child: Container(
             padding: const EdgeInsets.all(4), // inner padding around the selection pills
             decoration: BoxDecoration(
@@ -80,7 +80,7 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
         },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 10),
+          padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
             // When selected, it gets the dark theme color pill background
             color: isSelected ? const Color(0xFF5A5568) : Colors.transparent,
@@ -108,7 +108,7 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
   Widget _buildSubViewBody() {
     ActiveSpearhead spearhead = widget.spearheadData;
     switch (_currentSubView) {
-      //TODO: posible bug with "your hero phase" should probably be generalized at some point. Currently regex is handling it but I am unsure if that will be sufficient.
+      //TODO: possible bug with "your hero phase" should probably be generalized at some point. Currently regex is handling it but I am unsure if that will be sufficient.
       case PhaseSubView.hero:
         return _switchBuilder(spearhead.allAbilitiesFiltered(phase: AbilityPhase.heroPhase)); 
       case PhaseSubView.move:
@@ -125,7 +125,7 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
   }
   
   ///Controls the logic for the phase view then sends it off to the UI controller or returns a UI "Null"
-  Widget _switchBuilder(List<CompiledWarscrollAbility> spearheadAbilityPhase) {
+  Widget _switchBuilder(List<CompiledWarscrollAbility> filteredAbilities) {
 
     //Init
       ActiveSpearhead spearhead= widget.spearheadData; //i dont wanna type this a bunch of times
@@ -139,7 +139,7 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
         if (_abilityIsPartOfPhase(spearhead.selectedRegimentAbility)) lazyBuildPicks.add(spearhead.selectedRegimentAbility);
 
     //"UI Null"
-      if (spearheadAbilityPhase.isEmpty && lazyBuildPicks.isEmpty && battleTraits.isEmpty) {
+      if (lazyBuildPicks.isEmpty && battleTraits.isEmpty && !phaseHasCombatData(spearhead)) {
         return const Padding(
           padding: EdgeInsets.all(16.0),
           child: Center(child: Text('Nothing to do here')),
@@ -147,9 +147,10 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
       }
 
     return ListView(
+      padding: EdgeInsets.fromLTRB(16, 10, 16, 30),
       key: ValueKey(_currentSubView),
       children: [
-         _populateCards(spearheadAbilityPhase),
+         _populateCards(filteredAbilities),
         //populate so long as the picks arent empty
         if(lazyBuildPicks.isNotEmpty)
           _populateCardRules(lazyBuildPicks),
@@ -158,14 +159,23 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
           _populateCardRules(battleTraits),
         
         
-        //Populate out the fight phases TODO: Might wanna add a setting to have the user select if they want to have the abilities (_switchBuilder) or weapons display first
-        // if(_currentSubView == PhaseSubView.fight)
-        //   _populateCardWeapon(spearhead.allMeleeWeapons()),
-        // if(_currentSubView == PhaseSubView.ranged)
-        //   _populateCardWeapon(spearhead.allRangedWeapons())
+        //Populate out the fight phases 
+        //TODO: FEATURE; Might wanna add a setting to have the user select if they want to have the abilities (_switchBuilder) or weapons display first
+        
+        if(_currentSubView == PhaseSubView.fight)
+          _populateweapons(spearhead.allMeleeWeapons()),
+        if(_currentSubView == PhaseSubView.ranged)
+          _populateweapons(spearhead.allRangedWeapons())
       ],
     );
   }
+  ///Checks to see if there is any data within the ranged or melee
+  bool phaseHasCombatData(ActiveSpearhead spearhead){
+    if (_currentSubView == PhaseSubView.fight && spearhead.allMeleeWeapons().isNotEmpty) return true;
+    if (_currentSubView == PhaseSubView.ranged && spearhead.allRangedWeapons().isNotEmpty) return true;
+    return false;
+  }
+
 
   // Widget _populateCards() UI controller element
   // => Return a clickable card correctly gets all cards associated wtih a certain phase. TODO: Make it clickable and have it direct to the correct unit card popup
@@ -174,8 +184,9 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: List.generate(spearheadAbilites.length, (index) {
         final ability = spearheadAbilites[index];
-        return abilityCard(
-          usage: ability.abilityType.capitalize(),
+        return CommonUtils.abilityCard(
+          usage: ability.abilityType,
+          who: ability.warscrollName.capitalize(),
           title: ability.abilityName.capitalize(),
           description: ability.description.capitalize(),
         );
@@ -188,7 +199,7 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: List.generate(spearheadAbilites.length, (index) {
         final ability = spearheadAbilites[index];
-        return abilityCard(
+        return CommonUtils.abilityCard(
           usage: ability.abilityType.capitalize(),
           title: ability.abilityName.capitalize(),
           description: ability.description.capitalize(),
@@ -197,85 +208,105 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
     );
   }
 
-    //TODO: need to stylize this and implement
-  //   Widget _populateCardWeapon(List<CompiledWeapon> spearheadAbilites) {
-  //   return ListView.builder(
-  //     itemCount: spearheadAbilites.length,
-  //     itemBuilder: (context, index) {
-  //       final ability = spearheadAbilites[index];
-  //       return weaponCard(
-  //         usage: ability.abilityType.capitalize(),
-  //         title: ability.abilityName.capitalize(),
-  //         description: ability.description.capitalize(),
-  //       );
-  //     },
-  //   );
-  // }
-
-
-
-  ///Checks the given CompiledWarscrollAbility and returns weather or not it is part of the current PhaseSubView
-  bool _abilityIsPartOfPhase(CompiledSpearheadAbilities ability)
-  {
-    //IF the current view is hero AND the enhancement/regiment/battle trait is in the hero phase and not passive
-      //is a enhancement/regement ability passive?
-      if (ability.abilityType != 'passive') {
-        //if not we can conclude it is active
-        //perform a null-safe timing check
-        if (ability.timing != null && ability.timing!.contains(_currentSubView.phaseTiming)) {
-          return true;
-        }
-      }
-    return false;
+  //Add populate weapon card here
+    Widget _populateweapons(List<CompiledWeapon> spearheadWeapons) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: List.generate(spearheadWeapons.length, (index) {
+        final weapon = spearheadWeapons[index];
+        return _weaponCard(weapon);
+      }),
+    );
   }
 
-// -----------------------------------------------------------------------------
-// TODO: PORT TO UTILS BUT THEY LIVE HERE FOR NOW (wasnt working to import it)
-// ------------------------------------------------------------------------
-  Widget abilityCard({
-          required String usage, required String title,
-          required String description, IconData icon = Icons.hide_image}) 
-    => Card
-    (
-    elevation: 5.0,
-    child: ListTile(
-      title: Row(
+  ///Checks the given CompiledSpearheadAbility and returns weather or not it is part of the current PhaseSubView
+  bool _abilityIsPartOfPhase(CompiledSpearheadAbilities ability)
+  {
+    //The only time the timing is null should be when it is passive. 
+      if (ability.timing != null && ability.timing!.contains(_currentSubView.phaseTiming)) {
+          return true;
+      }
+    return false;
+  }  
+  //TODO: Finish weapon card
+
+  /// returns a weapon card 
+  Widget _weaponCard(CompiledWeapon weapon)
+  => Card(
+    elevation: 5.0, // Keeping your existing shadow style
+    child: Padding(
+      padding: const EdgeInsets.all(12.0),
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 20.0,
-              ),
+            padding: const EdgeInsets.only(right: 8.0),
+            child: _drawWeaponIcons(weapon), 
+          ),
+
+          Expanded(
+
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  "${weapon.weaponName.capitalize()} used by ${weapon.warscrollName.capitalize()}",
+                  style: TextStyle(
+                    fontSize: 15
+                  ),
+                  ),
+                // 2. The Gray Stats Box goes here
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
+                  child: _drawWeaponInfo(weapon),
+                )
+              ],
             ),
-          ),
-          const Spacer(flex: 4),
-          Icon(icon), // This should be replaced with the spearhead faction image
-        ],
-      ),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(usage.capitalize()),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(description.capitalize()),
           ),
         ],
       ),
     ),
   );
+
   
-  //TODO: Finish weapon card
-  // Widget weaponCard(CompiledWeapon weapon)
-  // {
-    
-  // }
+  Widget _drawWeaponIcons(CompiledWeapon weapon) => weapon.range == 0 ?  CommonUtils.drawMeleeIcon() : CommonUtils.drawRangedIcon();
+
+  Widget _drawWeaponInfo(CompiledWeapon weapon)
+  =>Row(
+    mainAxisAlignment: MainAxisAlignment.center,
+    mainAxisSize: MainAxisSize.max,
+      children: [
+        if (weapon.range != 0) //melee no need for range data
+         _drawWeaponColumn(title: "Range", data: weapon.range),
+        _drawWeaponColumn(title: "A", data: weapon.attacks),
+        _drawWeaponColumn(title: "Hit", data: weapon.hit),
+        _drawWeaponColumn(title: "W", data: weapon.wound),
+        _drawWeaponColumn(title: "R", data: weapon.rend),
+        _drawWeaponColumn(title: "D", data: weapon.damage),
+      ],
+    );
+  
+  //var data because it can be a string or an int but Text() treats it the same anyway
+    Widget _drawWeaponColumn({required String title, required var data}) 
+      =>Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              title, 
+              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16)
+            ),
+            const SizedBox(height: 4), // A little spacing between title and data
+            Text(
+              "${data}", 
+              style: const TextStyle(fontSize: 16)
+            ), 
+          ],
+        ),
+      );
+
+  
 
 }

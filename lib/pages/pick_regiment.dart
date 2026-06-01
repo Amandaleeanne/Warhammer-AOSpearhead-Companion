@@ -76,8 +76,8 @@ class PickRegiment extends StatelessWidget {
             return ListView(
               children: abilities.map((ability) {
                 return CommonUtils.abilityCardNavigator(
-                  context: context,
                   usage: ability.type.capitalize(),
+                  when: ability.timing,
                   title: ability.name.capitalize(),
                   description: ability.description,
                   onTap: () => onTap(ability),

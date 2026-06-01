@@ -84,7 +84,7 @@ class _ArmyViewerState extends State<ArmyViewer> {
           else if (_hasError || _spearheadData == null) // Oh no an error!
             Expanded(child: Center(child: Text('Error loading army viewer data')))
 
-          else ...[ //No more waiting needed, build needed data.
+          else ...[
             _buildPersistentCarousel(_spearheadData!),
             SizedBox(height: 8),
             _buildAnimatedContentView(_spearheadData!),
@@ -281,13 +281,134 @@ class _ArmyViewerState extends State<ArmyViewer> {
         child: Center(child: LinearProgressIndicator()),
       );
 
-    Widget _buildPersistentCarousel(ActiveSpearhead db) 
-    => Container(
-        height: 140,
+    Widget _buildPersistentCarousel(ActiveSpearhead spearhead) { 
+      if (spearhead.allPassiveTraits.isEmpty) {
+        return Container(
+          height: 140,
+          width: double.infinity,
+          color: Colors.grey[100],
+          child: Center(child: Text('No passive abilities available')),
+        );
+      }
+
+      return Container(
         width: double.infinity,
-        color: Colors.grey[100], 
-        child: Center(child: Text(" ")),
+        color: Colors.grey[100],
+        padding: EdgeInsets.symmetric(vertical: 10),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: EdgeInsets.symmetric(horizontal: 12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: _buildCarouselItems(spearhead.allPassiveTraits),
+          ),
+        ),
       );
+    }
+
+    List<Widget> _buildCarouselItems(List<CompiledSpearheadAbilities> abilities) {
+      final items = <Widget>[];
+      for (int i = 0; i < abilities.length; i++) {
+        items.add(_buildCarouselItemCard(abilities[i]));
+        if (i < abilities.length - 1) {
+          items.add(SizedBox(width: 12));
+        }
+      }
+      return items;
+    }
+
+    Widget _buildCarouselItemCard(CompiledSpearheadAbilities ability) {
+      return SizedBox(
+        width: 280,
+        child: _carouselCard(
+          usage: ability.abilityType.capitalize(),
+          who: ability.timing,
+          title: ability.abilityName,
+          description: ability.description,
+          icon: _abilityCardIcon(ability.ruleCategory),
+        ),
+      );
+    }
+    IconData _abilityCardIcon(String category) {
+      if (category.toLowerCase().contains('battle')) {
+        return Icons.shield;
+      }
+      if (category.toLowerCase().contains('regiment')) {
+        return Icons.flag;
+      }
+      if (category.toLowerCase().contains('enhancement')) {
+        return Icons.auto_awesome;
+      }
+      return Icons.star_border;
+    }
+
+    Widget _carouselCard({
+      required String usage,
+      String? who,
+      required String title,
+      required String description,
+      required IconData icon,
+    }) {
+      final subtitle = who != null ? 'Used $usage by $who' : 'Used $usage';
+
+      return Card(
+        elevation: 5.0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  Icon(icon, size: 24),
+                ],
+              ),
+              SizedBox(height: 8),
+              Text(
+                subtitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: Colors.grey[700],
+                  fontSize: 13,
+                ),
+              ),
+              SizedBox(height: 8),
+              ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: 96),
+                child: Scrollbar(
+                  thumbVisibility: true,
+                  child: SingleChildScrollView(
+                    physics: BouncingScrollPhysics(),
+                    child: Text(
+                      description,
+                      style: TextStyle(
+                        color: Colors.grey[800],
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
 /// ----------- Content Views & Transitions ------------------
 

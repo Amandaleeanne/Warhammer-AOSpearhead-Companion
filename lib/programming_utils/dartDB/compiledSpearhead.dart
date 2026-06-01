@@ -54,6 +54,10 @@ class ActiveSpearhead
         (r) => r.abilityType != 'passive',
       ).toList();
 
+    List<CompiledSpearheadAbilities> get allPassiveTraits =>
+      activeRules.where(
+        (r) => r.abilityType == 'passive'
+      ).toList();
     ///Gets all Battle Traits in the ActiveSpearhead
     ///
     ///Example:

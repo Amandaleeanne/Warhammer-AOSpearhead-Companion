@@ -21,7 +21,7 @@ class _UnitViewContentState extends State<UnitViewContent> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             // Unit Avatar Placeholder
-           _imageBuilder(70, 70, "assets/images/missingTexture.PNG", 16), //TODO: replace with correct image (gotta make it tho)
+           CommonUtils.imageBuilder(70, 70, "assets/images/missingTexture.PNG", 16), //TODO: replace with correct image (gotta make it tho)
             const SizedBox(width: 16),
             
             // Unit Stats Columns
@@ -70,44 +70,24 @@ class _UnitViewContentState extends State<UnitViewContent> {
       return _drawMeleeAndRangedIcons();
     } else if (currUnit.hasRangedWeapon && !currUnit.hasMeleeWeapon)
     {
-      return _drawRangedIcon();
+      return CommonUtils.drawRangedIcon();
     }else if(!currUnit.hasRangedWeapon && currUnit.hasMeleeWeapon)
     {
-      return _drawMeleeIcon();
+      return CommonUtils.drawMeleeIcon();
     }
     return Column(children: [Text("ERROR!")],); //uh oh completed with an error!
 
   }
 
-  Widget _drawRangedIcon()
-  =>_imageBuilder(40, 40, "assets/images/bow.png", 1); //TODO: replace with ranged icon
-
-  Widget _drawMeleeIcon()
-  =>_imageBuilder(40, 40, "assets/images/swordBlank.png", 1); //TODO: replace with ranged icon
-
   Column _drawMeleeAndRangedIcons()
   =>Column(
         children: [
-          _drawMeleeIcon(),
+          CommonUtils.drawMeleeIcon(),
           SizedBox(height: 8),
-          _drawRangedIcon()
+          CommonUtils.drawRangedIcon()
         ]
       );
 
-  //Image builder
-  Widget _imageBuilder(double width, double height, String path, double radius) 
-  => Container(
-        width: width,
-        height: height,
-        decoration: BoxDecoration(
-          color: Colors.transparent, // Fallback background color while loading
-          borderRadius: BorderRadius.circular(radius), 
-          image: DecorationImage(
-            image: AssetImage(path), 
-            fit: BoxFit.scaleDown, 
-          ),
-        ),
-      );
 }
 
 // Small helper widget for the stat layout columns
