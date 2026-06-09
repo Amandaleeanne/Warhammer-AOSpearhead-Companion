@@ -56,6 +56,13 @@ class _UnitViewContentState extends State<UnitViewContent> {
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
               child: _determineIcons(index)
             ),
+
+            Divider(
+              color: Colors.black,
+              thickness: 2,
+              indent: 20, // Empty space at the leading edge
+              endIndent: 20, // Empty space at the trailing edge
+            ),
           ],
         );
       },

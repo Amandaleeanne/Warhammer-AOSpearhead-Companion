@@ -16,6 +16,17 @@ extension PhaseSubViewString on PhaseSubView
 
     }
   }
+
+  AbilityPhase get toAbilityPhase {
+    switch(this) {
+      case PhaseSubView.hero: return AbilityPhase.heroPhase;
+      case PhaseSubView.move: return AbilityPhase.movementPhase;
+      case PhaseSubView.ranged: return AbilityPhase.shootingPhase;
+      case PhaseSubView.charge: return AbilityPhase.chargePhase;
+      case PhaseSubView.fight: return AbilityPhase.combatPhase;
+      case PhaseSubView.endOfTurn: return AbilityPhase.endOfAnyTurn;
+    }
+  }
 }
 
 ///Class contains everything needed to populate the PhaseView of the Main Game Page (army_viewer.dart)
@@ -65,6 +76,17 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
         ),
       ],
     );
+  }
+
+  //looks at data for that pahse and determines weather or not it should be drawn
+  //TODO: Finish
+  bool tabHasData(PhaseSubView phase)
+  {
+    if(phase == PhaseSubView.fight || phase == PhaseSubView.ranged)
+    {
+      return phaseHasCombatData(phase);
+    }
+    return widget.spearheadData.allAbilitiesFiltered(phase: phase.toAbilityPhase).isNotEmpty;
   }
 
   // builds an individual segmented item tab
@@ -135,11 +157,11 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
 
     //optimization for allowing lazy adding enhancements and regiment picks to the viewer
       List<CompiledSpearheadAbilities> lazyBuildPicks = [];
-        if (_abilityIsPartOfPhase(spearhead.selectedEnhancement)) lazyBuildPicks.add(spearhead.selectedEnhancement);
-        if (_abilityIsPartOfPhase(spearhead.selectedRegimentAbility)) lazyBuildPicks.add(spearhead.selectedRegimentAbility);
+        if (_abilityIsPartOfPhase(spearhead.selectedEnhancement, _currentSubView)) lazyBuildPicks.add(spearhead.selectedEnhancement);
+        if (_abilityIsPartOfPhase(spearhead.selectedRegimentAbility, _currentSubView)) lazyBuildPicks.add(spearhead.selectedRegimentAbility);
 
     //"UI Null"
-      if (lazyBuildPicks.isEmpty && battleTraits.isEmpty && !phaseHasCombatData(spearhead)) {
+      if (lazyBuildPicks.isEmpty && battleTraits.isEmpty && !phaseHasCombatData(_currentSubView)) {
         return const Padding(
           padding: EdgeInsets.all(16.0),
           child: Center(child: Text('Nothing to do here')),
@@ -170,9 +192,9 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
     );
   }
   ///Checks to see if there is any data within the ranged or melee
-  bool phaseHasCombatData(ActiveSpearhead spearhead){
-    if (_currentSubView == PhaseSubView.fight && spearhead.allMeleeWeapons().isNotEmpty) return true;
-    if (_currentSubView == PhaseSubView.ranged && spearhead.allRangedWeapons().isNotEmpty) return true;
+  bool phaseHasCombatData(PhaseSubView currentView){
+    if (currentView == PhaseSubView.fight && widget.spearheadData.allMeleeWeapons().isNotEmpty) return true;
+    if (currentView == PhaseSubView.ranged && widget.spearheadData.allRangedWeapons().isNotEmpty) return true;
     return false;
   }
 
@@ -208,7 +230,6 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
     );
   }
 
-  //Add populate weapon card here
     Widget _populateweapons(List<CompiledWeapon> spearheadWeapons) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -220,17 +241,15 @@ class _PhaseViewContentState extends State<PhaseViewContent> {
   }
 
   ///Checks the given CompiledSpearheadAbility and returns weather or not it is part of the current PhaseSubView
-  bool _abilityIsPartOfPhase(CompiledSpearheadAbilities ability)
+  bool _abilityIsPartOfPhase(CompiledSpearheadAbilities ability, PhaseSubView currentView)
   {
     //The only time the timing is null should be when it is passive. 
-      if (ability.timing != null && ability.timing!.contains(_currentSubView.phaseTiming)) {
+      if (ability.timing != null && ability.timing!.contains(currentView.phaseTiming)) {
           return true;
       }
     return false;
   }  
-  //TODO: Finish weapon card
 
-  /// returns a weapon card 
   Widget _weaponCard(CompiledWeapon weapon)
   => Card(
     elevation: 5.0, // Keeping your existing shadow style

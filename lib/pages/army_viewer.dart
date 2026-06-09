@@ -282,12 +282,12 @@ class _ArmyViewerState extends State<ArmyViewer> {
       );
 
     Widget _buildPersistentCarousel(ActiveSpearhead spearhead) { 
+      //Returning "null"
       if (spearhead.allPassiveTraits.isEmpty) {
         return Container(
-          height: 140,
+          height: 1,
           width: double.infinity,
           color: Colors.grey[100],
-          child: Center(child: Text('No passive abilities available')),
         );
       }
 
